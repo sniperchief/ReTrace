@@ -39,7 +39,6 @@ COPY --chown=app start.sh .
 
 ENV WHISPER_MODEL=${WHISPER_MODEL} \
     WHISPER_DOWNLOAD_ROOT=/models/whisper \
-    LLM_BASE_URL=http://127.0.0.1:8080 \
     LLM_MODEL_PATH=/models/gemma.gguf \
     HF_HUB_OFFLINE=1 \
     PYTHONUNBUFFERED=1

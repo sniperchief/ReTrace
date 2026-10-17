@@ -4,10 +4,14 @@
 set -e
 
 THREADS="${LLM_THREADS:-$(nproc)}"
+# Gemma's internal port. Must differ from $PORT (Railway often assigns 8080).
+LLM_PORT="${LLM_PORT:-8090}"
+if [ "$LLM_PORT" = "${PORT:-7860}" ]; then LLM_PORT=8091; fi
+export LLM_BASE_URL="http://127.0.0.1:${LLM_PORT}"
 
 /opt/llama/llama-server \
   -m "${LLM_MODEL_PATH:-/models/gemma.gguf}" \
-  --host 127.0.0.1 --port 8080 \
+  --host 127.0.0.1 --port "$LLM_PORT" \
   --ctx-size "${LLM_CTX_SIZE:-4096}" \
   --threads "$THREADS" \
   --parallel 1 \
