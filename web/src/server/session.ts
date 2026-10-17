@@ -1,6 +1,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 import { getAuth } from "./auth";
 
@@ -9,8 +10,10 @@ export type Technician = { id: string; name: string; email: string };
 /** The signed-in technician for this request, verified against the database. */
 export const getCurrentTechnician = cache(async (): Promise<Technician | null> => {
   // Read the request first: during prerendering this suspends before any
-  // configuration (secrets, database) is touched.
+  // configuration (secrets, database) is touched. `connection()` also marks the
+  // session check as request-time work (it compares expiry with the current time).
   const requestHeaders = await headers();
+  await connection();
   const session = await getAuth().api.getSession({ headers: requestHeaders });
   if (!session) return null;
   return { id: session.user.id, name: session.user.name, email: session.user.email };

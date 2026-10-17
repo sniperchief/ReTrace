@@ -4,7 +4,7 @@ import { AutoRefresh } from "@/components/auto-refresh";
 import { DiscardDraftButton, ExtractionRunner, NotesForm, RetryButton } from "@/components/draft-components";
 import { RepairForm } from "@/components/repair-form";
 import { Card, PageHeader } from "@/components/ui";
-import { getMessages, type Messages } from "@/i18n";
+import { getMessages, interpolate, type Messages } from "@/i18n";
 import { hasAnyField, type ExtractionFlag } from "@/lib/extraction";
 import { toRepairFormValues } from "@/lib/repair-form";
 import {
@@ -63,6 +63,9 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
   const transcriptFailed = source.kind === "voice" && source.transcriptStatus === "failed";
   const original = source.kind === "voice" ? source.transcript : source.typedText;
   const suggestion = aiSuggestion?.status === "done" ? aiSuggestion : null;
+  const rulesFields = Object.entries(suggestion?.sources ?? {})
+    .filter(([, source]) => source === "rules")
+    .map(([field]) => flagLabel(t, field));
   const run = runExtractionAction.bind(null, id, false);
   const retry = runExtractionAction.bind(null, id, true);
 
@@ -126,9 +129,21 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
           </div>
         )}
         {suggestion && (
-          <div className="space-y-1 rounded-xl border border-accent/60 bg-accent/10 p-4" aria-live="polite">
-            <p className="font-medium">{hasAnyField(suggestion.fields) ? t.review.extracted : t.review.extractedEmpty}</p>
+          <div className="space-y-2 rounded-xl border border-accent/60 bg-accent/10 p-4" aria-live="polite">
+            <p className="font-medium">
+              {!hasAnyField(suggestion.fields)
+                ? t.review.extractedEmpty
+                : suggestion.engine === "rules"
+                  ? suggestion.aiError
+                    ? interpolate(t.review.rulesOnlyAiFailed, { reason: failureText(t, suggestion.aiError) })
+                    : t.review.rulesOnly
+                  : t.review.extracted}
+            </p>
+            {suggestion.engine === "ai+rules" && rulesFields.length > 0 && (
+              <p className="text-sm">{interpolate(t.review.rulesHelped, { fields: rulesFields.join(", ") })}</p>
+            )}
             <FlagList t={t} flags={suggestion.flags} />
+            {suggestion.aiError && <RetryButton run={retry} label={t.review.retryAi} />}
           </div>
         )}
       </div>

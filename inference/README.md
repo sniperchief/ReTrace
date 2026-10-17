@@ -10,7 +10,7 @@ pinned: false
 
 # ReTrace inference service
 
-Self-hosted **Whisper** (speech-to-text, via faster-whisper) and **Gemma 4 E2B** (structured extraction, via the llama.cpp server). CPU only. Designed for a free Hugging Face Docker Space (CPU Basic: 2 vCPU, 16 GB RAM).
+Self-hosted **Whisper** (speech-to-text, via faster-whisper) and **Gemma 3 1B** (structured extraction, via the llama.cpp server). CPU only. Needs about 2–2.5 GB of RAM in total (Gemma ~0.8 GB, Whisper ~0.5 GB, plus the service itself).
 
 The YAML block above is Hugging Face Space metadata.
 
@@ -31,8 +31,8 @@ python -m venv .venv
 copy .env.example .env   # set INFERENCE_API_KEY
 
 # 1. llama.cpp CPU server (https://github.com/ggml-org/llama.cpp/releases, "bin-win-cpu-x64")
-#    and the Gemma 4 E2B GGUF (google/gemma-4-E2B-it-qat-q4_0-gguf on Hugging Face, ~3.4 GB)
-.\.bin\llama\llama-server.exe -m .models\gemma-4-E2B_q4_0-it.gguf --host 127.0.0.1 --port 8080 -c 4096 -t 2 --parallel 1 --jinja
+#    and the Gemma 3 1B GGUF (ggml-org/gemma-3-1b-it-GGUF, gemma-3-1b-it-Q4_K_M.gguf, ~0.8 GB)
+.\.bin\llama\llama-server.exe -m .models\gemma-3-1b-it-Q4_K_M.gguf --host 127.0.0.1 --port 8080 -c 4096 -t 2 --parallel 1 --jinja
 
 # 2. The API (downloads Whisper "small", ~480 MB, on first use)
 .\.venv\Scripts\python -m uvicorn app.main:app --port 7860

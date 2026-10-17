@@ -9,7 +9,6 @@ import { toFieldErrors } from "@/lib/schemas/common";
 import { confirmDraft, createTextDraft, discardDraft, setEditedNotes } from "@/server/data/drafts";
 import { NotFoundError } from "@/server/data/errors";
 import { runExtraction, type ExtractionOutcome } from "@/server/extraction";
-import { inferenceMode } from "@/server/inference";
 import { requireTechnician } from "@/server/session";
 
 function rethrowNotFound(error: unknown): never {
@@ -24,8 +23,8 @@ export async function createTextDraftAction(
   formData: FormData,
 ): Promise<FormState> {
   const technician = await requireTechnician();
+  // Works with the AI off too: the rule-based extractor still fills the form.
   const values = { notes: String(formData.get("notes") ?? "") };
-  if (inferenceMode() === "off") return { errors: { notes: ["aiDisabled"] }, values };
   const parsed = notesSchema.safeParse(values);
   if (!parsed.success) return { errors: toFieldErrors(parsed.error), values };
 

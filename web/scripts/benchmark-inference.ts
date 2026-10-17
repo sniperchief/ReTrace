@@ -10,6 +10,9 @@ import {
   processModelOutput,
   wrapNotes,
 } from "../src/lib/extraction";
+import { mergeSuggestions, type Validated } from "../src/lib/extraction-merge";
+import { extractWithRules } from "../src/lib/rule-extraction";
+import type { RepairFieldsInput } from "../src/lib/schemas/repair";
 
 type Sample = { id: string; text: string; expected: { totalCostNaira: number | null; parts: { name: string }[] } };
 
@@ -77,20 +80,28 @@ for (const file of files) {
     JSON.stringify({ instructions: buildExtractionInstructions(today), text: wrapNotes(transcript), schema: extractionJsonSchema }),
     "application/json",
   );
-  let summary = `extract failed ${e.status}`;
+  const describe = (f: RepairFieldsInput) => {
+    const total = f.totalCostKobo === null ? "–" : f.totalCostKobo / 100;
+    const filled = ["reportedSymptoms", "diagnosis", "workPerformed"].filter((k) => f[k as keyof RepairFieldsInput]).length;
+    return `text ${filled}/3, parts ${f.partsReplaced.length}/${sample.expected.parts.length}, total ${total}`;
+  };
+  const rules = processModelOutput(JSON.stringify(extractWithRules(transcript, today)), transcript, today);
+  let aiSummary = `failed ${e.status}`;
+  let ai: Validated | null = null;
   if (e.status === 200) {
     const processed = processModelOutput(String(e.json.content), transcript, today);
-    if (!processed.ok) summary = "malformed output";
+    if (!processed.ok) aiSummary = "malformed output";
     else {
-      const f = processed.fields;
-      const total = f.totalCostKobo === null ? "–" : f.totalCostKobo / 100;
-      const expectedTotal = sample.expected.totalCostNaira ?? "–";
-      summary =
-        `parts ${f.partsReplaced.length}/${sample.expected.parts.length}, total ${total} (exp ${expectedTotal}), ` +
-        `flags ${processed.flags.map((x) => `${x.field}:${x.reason}`).join(" ") || "none"}`;
-      console.log(`\n--- ${file}\nTRANSCRIPT: ${transcript}\nRAW: ${e.json.content}\nFIELDS: ${JSON.stringify(f)}`);
+      ai = processed;
+      aiSummary = `${describe(processed.fields)}; flags ${processed.flags.map((x) => `${x.field}:${x.reason}`).join(" ") || "none"}`;
+      console.log(`\n--- ${file}\nTRANSCRIPT: ${transcript}\nRAW: ${e.json.content}\nAI FIELDS: ${JSON.stringify(processed.fields)}`);
     }
   }
+  const merged = rules.ok ? mergeSuggestions(ai, rules) : null;
+  if (merged) console.log(`MERGED (${merged.engine}): ${JSON.stringify(merged.fields)}`);
+  const summary =
+    `AI: ${aiSummary} | rules: ${rules.ok ? describe(rules.fields) : "-"} | ` +
+    `combined (${merged?.engine}): ${merged ? describe(merged.fields) : "-"} (exp total ${sample.expected.totalCostNaira ?? "–"})`;
   rows.push(
     `| ${file} | ${duration.toFixed(1)} s | ${t.wall} ms (${(t.wall / 1000 / duration).toFixed(2)}× RT) | ` +
       `${(wer(sample.text, transcript) * 100).toFixed(1)}% | ${e.wall} ms | ${e.json.completionTokens ?? "?"} | ${summary} |`,

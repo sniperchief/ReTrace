@@ -1,5 +1,6 @@
 import "server-only";
 import type { ExtractionFlag } from "@/lib/extraction";
+import type { Engine, FieldKey, FieldSource } from "@/lib/extraction-merge";
 import type { RepairFieldsInput } from "@/lib/schemas/repair";
 import { collections, type AiSuggestion, type RepairDoc } from "./collections";
 import { NotFoundError } from "./errors";
@@ -140,7 +141,8 @@ export async function claimExtraction(
     { aiSuggestion: { $exists: false } },
     { "aiSuggestion.status": "running", "aiSuggestion.startedAt": { $lt: new Date(Date.now() - STALE_MS) } },
   ];
-  if (opts.retry) claimable.push({ "aiSuggestion.status": "failed" });
+  // A retry re-runs a failed extraction, or one where the AI failed and only the rules filled the form.
+  if (opts.retry) claimable.push({ "aiSuggestion.status": "failed" }, { "aiSuggestion.aiError": { $exists: true } });
 
   const { modifiedCount } = await collections.repairs().updateOne(
     { _id: toObjectId(draftId)!, technicianId, status: "draft", $or: claimable },
@@ -153,7 +155,17 @@ export async function recordExtraction(
   technicianId: string,
   draftId: string,
   result:
-    | { ok: true; fields: RepairFieldsInput; flags: ExtractionFlag[]; model: string; processingMs: number; promptVersion: string }
+    | {
+        ok: true;
+        fields: RepairFieldsInput;
+        flags: ExtractionFlag[];
+        sources: Partial<Record<FieldKey, FieldSource>>;
+        engine: Engine;
+        aiError?: string;
+        model: string;
+        processingMs: number;
+        promptVersion: string;
+      }
     | { ok: false; error: string; promptVersion: string },
 ): Promise<void> {
   const _id = toObjectId(draftId);
@@ -164,6 +176,9 @@ export async function recordExtraction(
         status: "done",
         fields: result.fields,
         flags: result.flags,
+        sources: result.sources,
+        engine: result.engine,
+        ...(result.aiError ? { aiError: result.aiError } : {}),
         model: result.model,
         promptVersion: result.promptVersion,
         processingMs: result.processingMs,

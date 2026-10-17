@@ -422,6 +422,20 @@ typed notes  ─▶ draft {source.kind:"text", typedText}
 - **No inference:** it never relates a past fault to today's, never says a part "failed again", and never groups symptoms.
 - **Why not AI:** generating it in code means it can't hallucinate, needs no model time on the free CPU host, and is fully testable. No AI summary was added, so there is no AI-summary accuracy to claim.
 
+## 13. Model change: Gemma 3 1B + rule-based fallback (2026-10-17)
+
+- **Model:** Gemma 4 E2B (~3.5 GB RAM) was replaced by **Gemma 3 1B Q4_K_M** (~0.8 GB) to fit a small paid host (Railway Hobby).
+  - Licence: Gemma 3 is under Google's Gemma Terms of Use (commercial use allowed; prohibited-use policy applies), not Apache 2.0 like Gemma 4.
+  - Google's own Gemma 3 GGUF repository is gated, so the ungated `ggml-org/gemma-3-1b-it-GGUF` conversion is used.
+- **Rule-based extractor (`src/lib/rule-extraction.ts`):** sentence patterns (complaint, finding, work, advice, total), a list of generator parts, naira amounts with a currency word, and today/yesterday/day-month dates. It includes common Pidgin ("no gree start", "don die"). It copies only what is said.
+- **Merge (`src/lib/extraction-merge.ts`):**
+  - Per field, the AI's grounded answer wins and the rules fill empty fields.
+  - Parts the rules found that the AI missed are added, and missing part costs or quantities are completed from the rules.
+  - Each field's source (`ai` / `rules`) and the engine (`ai`, `ai+rules`, `rules`) are stored with the suggestion and shown on the review page.
+- **Failure behaviour:** if the AI is off, unreachable, slow or returns invalid output, the rules fill the form alone. The page says the AI couldn't be used and why, and offers a retry.
+  - With `INFERENCE_MODE=off`, typed "Quick notes" still pre-fill the form via the rules. Voice notes need the inference service for Whisper.
+- **Unchanged:** the technician must still confirm before anything is saved, and the original notes are kept.
+
 ## Sources consulted
 - Gemma 4 model overview — https://ai.google.dev/gemma/docs/core
 - Gemma 4 Apache 2.0 announcement — https://opensource.googleblog.com/2026/03/gemma-4-expanding-the-gemmaverse-with-apache-20.html

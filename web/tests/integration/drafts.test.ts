@@ -85,7 +85,7 @@ beforeEach(() => {
 describe("AI extraction on a draft", () => {
   it("stores a validated suggestion but does not fill or confirm the record", async () => {
     const id = await voiceDraft();
-    await expect(actions.runExtractionAction(id)).resolves.toEqual({ status: "done" });
+    await expect(actions.runExtractionAction(id)).resolves.toEqual({ status: "done", engine: "ai" });
 
     const extractCall = fake.calls.find((c) => c.path === "/v1/extract")!;
     expect((extractCall.body as { text: string }).text).toContain("Changed the spark plug, 1500 naira.");
@@ -110,22 +110,71 @@ describe("AI extraction on a draft", () => {
     expect(fake.calls.filter((c) => c.path === "/v1/extract")).toHaveLength(1);
   });
 
-  it("records malformed model output as a failure, with nothing filled in", async () => {
+  it("discards malformed model output, says so, and falls back to the rules", async () => {
     fake.extract = () => Response.json({ content: "Sure! Here are the details: plug changed", model: "gemma-test", processingMs: 5 });
     const id = await voiceDraft();
-    await expect(actions.runExtractionAction(id)).resolves.toEqual({ status: "failed", error: "malformed_output" });
-    expect((await drafts.getDraft(a.id, id))?.aiSuggestion).toMatchObject({ status: "failed", error: "malformed_output" });
+    await expect(actions.runExtractionAction(id)).resolves.toEqual({
+      status: "done",
+      engine: "rules",
+      aiError: "malformed_output",
+    });
+    const suggestion = (await drafts.getDraft(a.id, id))?.aiSuggestion;
+    // Nothing from the malformed answer is used; the rules read the transcript itself.
+    expect(suggestion).toMatchObject({
+      status: "done",
+      engine: "rules",
+      aiError: "malformed_output",
+      model: "rules",
+      fields: { workPerformed: "Changed the spark plug", partsReplaced: [{ name: "Spark plug", costKobo: 150_000 }] },
+      sources: { workPerformed: "rules", partsReplaced: "rules" },
+    });
   });
 
-  it("records an unavailable model as a failure and allows an explicit retry", async () => {
+  it("falls back to the rules when the model is unavailable, and allows an explicit AI retry", async () => {
     fake.extract = () => Response.json({ detail: { code: "llm_unavailable" } }, { status: 503 });
     const id = await voiceDraft();
-    await expect(actions.runExtractionAction(id)).resolves.toEqual({ status: "failed", error: "ai_unavailable" });
+    await expect(actions.runExtractionAction(id)).resolves.toEqual({ status: "done", engine: "rules", aiError: "ai_unavailable" });
     // Not retried automatically...
     await expect(actions.runExtractionAction(id)).resolves.toEqual({ status: "skipped" });
-    // ...but the technician can retry.
-    fake.extract = () => Response.json({ content: "{}", model: "gemma-test", processingMs: 5 });
-    await expect(actions.runExtractionAction(id, true)).resolves.toEqual({ status: "done" });
+    // ...but the technician can retry the AI.
+    fake.extract = () =>
+      Response.json({
+        content: JSON.stringify({ workPerformed: "Changed the spark plug", partsReplaced: [{ name: "Spark plug", quantity: 1, costNaira: 1500 }] }),
+        model: "gemma-test",
+        processingMs: 5,
+      });
+    await expect(actions.runExtractionAction(id, true)).resolves.toEqual({ status: "done", engine: "ai" });
+    expect((await drafts.getDraft(a.id, id))?.aiSuggestion).not.toHaveProperty("aiError");
+  });
+
+  it("uses the rules to fill fields the AI left empty", async () => {
+    fake.transcribe = () =>
+      Response.json({
+        text: "Customer said it would not start. Changed the spark plug, 1500 naira. I charged 5000 naira in total.",
+        durationSec: 6,
+        model: "whisper-small",
+        processingMs: 900,
+      });
+    fake.extract = () =>
+      Response.json({
+        content: JSON.stringify({ workPerformed: "Changed the spark plug", partsReplaced: [{ name: "Spark plug", quantity: 1, costNaira: null }] }),
+        model: "gemma-test",
+        processingMs: 5,
+      });
+    const id = await voiceDraft();
+    await expect(actions.runExtractionAction(id)).resolves.toEqual({ status: "done", engine: "ai+rules" });
+    expect((await drafts.getDraft(a.id, id))?.aiSuggestion).toMatchObject({
+      fields: {
+        workPerformed: "Changed the spark plug", // the AI's answer wins
+        reportedSymptoms: "It would not start", // from the rules
+        totalCostKobo: 500_000, // from the rules
+        partsReplaced: [{ name: "Spark plug", quantity: 1, costKobo: 150_000 }], // AI part, cost completed from the notes
+      },
+      sources: { workPerformed: "ai", reportedSymptoms: "rules", totalCost: "rules", partsReplaced: "ai" },
+      model: "gemma-test + rules",
+    });
+    fake.transcribe = () =>
+      Response.json({ text: "Changed the spark plug, 1500 naira.", durationSec: 6, model: "whisper-small", processingMs: 900 });
   });
 
   it("removes a cost the model invented", async () => {

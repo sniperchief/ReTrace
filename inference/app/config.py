@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # Gemma via a llama.cpp (or any OpenAI-compatible) server
     llm_base_url: str = "http://127.0.0.1:8080"
-    llm_model: str = "gemma-4-e2b-it-qat-q4_0"
+    llm_model: str = "gemma-3-1b-it-q4_k_m"
     llm_timeout_seconds: float = 240
     llm_max_tokens: int = 700
     llm_enable_thinking: bool = False

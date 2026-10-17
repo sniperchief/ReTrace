@@ -20,14 +20,23 @@ export default async function VoiceNotePage({ params }: PageProps<"/generators/[
   const env = getEnv();
   const manualHref = `/generators/${id}/repairs/new`;
 
+  // Without the AI service there's no transcription, but typed notes still fill the form via the rules.
   if (env.INFERENCE_MODE === "off") {
     return (
       <>
-        <PageHeader title={t.voice.title} back={{ href: `/generators/${id}`, label: generator.label }} />
-        <Card className="space-y-3">
-          <p>{t.voice.aiDisabled}</p>
-          <LinkButton href={manualHref}>{t.repairs.new}</LinkButton>
+        <PageHeader title={t.voice.quickNotesTitle} back={{ href: `/generators/${id}`, label: generator.label }} />
+        <p className="mb-4 text-sm">{t.voice.quickNotesIntro}</p>
+        <Card>
+          <NotesForm
+            action={createTextDraftAction.bind(null, id)}
+            label={t.voice.typedNotes}
+            hint={t.voice.typedNotesHint}
+            submitLabel={t.voice.submitNotes}
+          />
         </Card>
+        <div className="mt-4 text-center">
+          <LinkButton href={manualHref} variant="ghost">{t.voice.manualInstead}</LinkButton>
+        </div>
       </>
     );
   }

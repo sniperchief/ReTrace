@@ -1,6 +1,7 @@
 import "server-only";
 import type { ObjectId } from "mongodb";
 import type { ExtractionFlag } from "@/lib/extraction";
+import type { Engine, FieldKey, FieldSource } from "@/lib/extraction-merge";
 import type { FuelType } from "@/lib/schemas/generator";
 import type { RepairFieldsInput } from "@/lib/schemas/repair";
 import { getDb } from "../db";
@@ -65,6 +66,11 @@ export type AiSuggestion =
       status: "done";
       fields: RepairFieldsInput;
       flags: ExtractionFlag[];
+      /** Which method filled each field (absent on records from before rules existed). */
+      sources?: Partial<Record<FieldKey, FieldSource>>;
+      engine?: Engine;
+      /** Set when the AI was attempted but failed, so the rules filled the form alone. */
+      aiError?: string;
       model: string;
       promptVersion: string;
       processingMs: number;

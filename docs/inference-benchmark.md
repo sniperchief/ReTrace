@@ -1,4 +1,33 @@
-# Inference benchmark (Phase 2)
+# Inference benchmark
+
+## Update (2026-10-17): Gemma 3 1B + rule-based fallback (current setup)
+
+To cut memory, the model changed from Gemma 4 E2B to **Gemma 3 1B** (`gemma-3-1b-it-Q4_K_M.gguf`, ggml-org, 806 MB, SHA-256 verified; Gemma Terms of Use licence). A **rule-based extractor** now runs alongside it. The AI's answer wins per field, the rules fill gaps, and both go through the same grounding checks.
+
+| | Gemma 4 E2B (before) | Gemma 3 1B (now) |
+|---|---|---|
+| llama-server working set | 1,849 MB (partly paged) | **811 MB** |
+| Cold load | 25 s | **~5 s** |
+| Expected service RAM incl. Whisper | ~5–6 GB | **~2–2.5 GB** |
+
+Same 7 recordings (text fields = problem/diagnosis/work found):
+
+| Sample | Gemma 3 1B alone | Rules alone | **Combined (what the app uses)** |
+|---|---|---|---|
+| short-plug | 3/3 text, **0/1 parts, total missed** | 3/3, 1/1, ₦5,000 | 3/3, 1/1, ₦5,000 ✅ |
+| sparse-noise (clean/noisy) | 3/3, 0/0, none | 3/3, 0/0, none | 3/3, 0/0, none ✅ |
+| medium-avr | 3/3, 2/2, ₦30,000 | 3/3, 2/2, ₦30,000 | 3/3, 2/2, ₦30,000 ✅ |
+| medium-avr (noisy) | 3/3, **1/2 parts**, ₦30,000 | 3/3, 2/2, ₦30,000 | 3/3, 2/2, ₦30,000 ✅ |
+| long-carb (clean/noisy) | 3/3, 3/3, ₦20,000 (date dropped, quantities invalid) | 3/3, 3/3, ₦20,000, date ✅ | 3/3, 3/3, ₦20,000, date ✅ |
+
+- Gemma 3 1B is noticeably weaker than Gemma 4 E2B. It missed the only part and the total on one note and a part on another, and gave invalid quantities. The rules caught every one of these on this set. The combined output matched the expected fields on all 7.
+- **Speed figures from this run aren't reliable.** The laptop had only ~0.6 GB of RAM free (database, dev server, editor and browser all open) and was paging to disk. Gemma generated only 4–5 tokens/s, and even Whisper was slower than in the first run (1.2–1.7× real time vs 0.7–1.0×). Extraction took 42–142 s per note. Re-measure on the deploy host.
+- **Real end to end** (`tests/integration/real-inference.test.ts`, short note): transcribe 22 s, extract 52 s, engine `ai+rules`, saved after confirmation.
+- The rules are tested on these transcripts plus Pidgin phrasing and edge cases (`tests/unit/rule-extraction.test.ts`). They only understand common phrasings, which is why the AI still runs first.
+
+---
+
+# Original Phase 2 benchmark (Gemma 4 E2B)
 
 Measured 2026-10-16 by running the real models **on the development laptop**, not on Hugging Face.
 

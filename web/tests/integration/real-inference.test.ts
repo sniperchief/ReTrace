@@ -73,7 +73,8 @@ describe.skipIf(!url || !key || !sample)("real inference service", () => {
 
       const outcome = await actions.runExtractionAction(body.draftId);
       const extractedAt = Date.now();
-      expect(outcome).toEqual({ status: "done" });
+      expect(outcome).toMatchObject({ status: "done" });
+      expect(outcome).not.toHaveProperty("aiError"); // the real model answered
 
       const draft = await getDraft(tech.id, body.draftId);
       expect(draft?.aiSuggestion?.status).toBe("done");

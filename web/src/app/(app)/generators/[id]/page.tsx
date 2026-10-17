@@ -62,8 +62,10 @@ export default async function GeneratorPage({ params }: PageProps<"/generators/[
       </Card>
 
       <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {aiEnabled && <LinkButton href={`/generators/${id}/voice-note`}>🎙 {t.voice.button}</LinkButton>}
-        <LinkButton href={`/generators/${id}/repairs/new`} variant={aiEnabled ? "secondary" : "primary"}>
+        <LinkButton href={`/generators/${id}/voice-note`}>
+          {aiEnabled ? `🎙 ${t.voice.button}` : `📝 ${t.voice.quickNotes}`}
+        </LinkButton>
+        <LinkButton href={`/generators/${id}/repairs/new`} variant="secondary">
           + {t.generators.addRepair}
         </LinkButton>
       </div>
