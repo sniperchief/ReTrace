@@ -2,10 +2,7 @@
 
 import { useFormStatus } from "react-dom";
 import type { ComponentProps, ReactNode } from "react";
-import { buttonStyles } from "./ui";
-
-const inputClass =
-  "block w-full min-h-11 rounded-lg border border-border bg-surface px-3 py-2 text-base text-foreground aria-[invalid=true]:border-danger";
+import { buttonStyles, inputClass } from "./ui";
 
 export function Field({
   id,

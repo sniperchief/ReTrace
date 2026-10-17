@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getMessages, errorMessage, interpolate } from "@/i18n";
 import type { FieldErrors } from "@/lib/schemas/common";
-import { buttonStyles } from "./ui";
+import { buttonStyles, inputClass as input } from "./ui";
 
 type Values = { q?: string; part?: string; from?: string; to?: string; generator?: string };
 
@@ -17,14 +17,13 @@ export function RepairSearchForm({
 }) {
   const t = getMessages();
   const err = (k: string) => (errors[k] ? errorMessage(t, errors[k]![0]) : undefined);
-  const input = "block w-full min-h-11 rounded-lg border border-border bg-surface px-3 py-2 text-base";
 
   return (
-    <form action="/repairs" method="get" role="search" className="mb-5 space-y-3 rounded-xl border border-border bg-surface p-4">
+    <form action="/repairs" method="get" role="search" className="mb-5 space-y-3 rounded-card border border-border bg-surface p-4">
       {values.generator && generatorLabel && (
         <p className="flex flex-wrap items-center gap-2 text-sm">
           <input type="hidden" name="generator" value={values.generator} />
-          <span className="rounded-full bg-brand/10 px-3 py-1 text-brand">
+          <span className="rounded-full bg-tint px-3 py-1 text-foreground">
             {interpolate(t.search.onlyGenerator, { label: generatorLabel })}
           </span>
         </p>

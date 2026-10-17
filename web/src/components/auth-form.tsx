@@ -41,7 +41,8 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       else setFormError(t.auth.genericError);
       return;
     }
-    router.replace("/generators");
+    // New accounts start the guided setup; returning technicians go home.
+    router.replace(isSignUp ? "/welcome" : "/home");
     router.refresh();
   }
 
@@ -69,7 +70,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       </button>
       <p className="text-center text-sm text-muted">
         {isSignUp ? t.auth.haveAccount : t.auth.noAccount}{" "}
-        <Link href={isSignUp ? "/sign-in" : "/sign-up"} className="font-medium text-brand underline">
+        <Link href={isSignUp ? "/sign-in" : "/sign-up"} className="font-medium text-foreground underline underline-offset-2">
           {isSignUp ? t.auth.goToSignIn : t.auth.goToSignUp}
         </Link>
       </p>

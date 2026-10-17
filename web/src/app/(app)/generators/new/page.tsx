@@ -23,7 +23,7 @@ export default async function NewGeneratorPage({ searchParams }: PageProps<"/gen
       {customers.length === 0 ? (
         <div className="space-y-3">
           <EmptyState>{t.generators.noCustomersYet}</EmptyState>
-          <LinkButton href="/customers/new">+ {t.customers.new}</LinkButton>
+          <LinkButton href="/customers/new">{t.customers.new}</LinkButton>
         </div>
       ) : (
         <GeneratorForm

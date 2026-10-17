@@ -48,7 +48,7 @@ export default async function VoiceNotePage({ params }: PageProps<"/generators/[
       <p className="mb-4 text-xs text-muted">{t.voice.privacy}</p>
       <VoiceNoteCapture generatorId={id} maxSeconds={env.MAX_AUDIO_SECONDS} maxBytes={env.MAX_AUDIO_BYTES} />
 
-      <details className="mt-6 rounded-xl border border-border bg-surface p-4">
+      <details className="mt-6 rounded-card border border-border bg-surface p-4">
         <summary className="cursor-pointer font-medium">{t.voice.typeInstead}</summary>
         <div className="mt-3">
           <NotesForm

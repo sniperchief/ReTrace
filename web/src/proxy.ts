@@ -2,6 +2,7 @@ import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
+const LANDING = "/";
 
 /**
  * Fast redirect for visitors without a session cookie. This is only a UX
@@ -10,6 +11,12 @@ const PUBLIC_PATHS = ["/sign-in", "/sign-up"];
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  if (pathname === LANDING) {
+    // Signed-in technicians skip the landing page and go straight into the app.
+    return getSessionCookie(request)
+      ? NextResponse.redirect(new URL("/home", request.url))
+      : NextResponse.next();
+  }
   if (PUBLIC_PATHS.some((p) => pathname === p)) return NextResponse.next();
   if (!getSessionCookie(request)) {
     return NextResponse.redirect(new URL("/sign-in", request.url));

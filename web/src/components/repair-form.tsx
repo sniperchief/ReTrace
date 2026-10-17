@@ -60,7 +60,7 @@ export function RepairForm({
       {textArea("diagnosis", t.repairs.diagnosis, t.repairs.diagnosisHint)}
       {textArea("workPerformed", t.repairs.workPerformed)}
 
-      <fieldset className="space-y-3 rounded-xl border border-border p-3">
+      <fieldset className="space-y-3 rounded-card border border-border p-3">
         <legend className="px-1 text-sm font-medium">
           {t.repairs.partsReplaced} <span className="font-normal text-muted">({optional})</span>
         </legend>
@@ -109,9 +109,9 @@ export function RepairForm({
       {textArea("technicianNotes", t.repairs.technicianNotes)}
 
       {confirmLabel && (
-        <div className="rounded-xl border border-accent/60 bg-accent/10 p-3">
+        <div className="rounded-card border border-line-strong bg-tint p-3">
           <label className="flex items-start gap-3 text-sm font-medium">
-            <input type="checkbox" name="confirmed" required className="mt-0.5 size-5 shrink-0 accent-brand"
+            <input type="checkbox" name="confirmed" required className="mt-0.5 size-5 shrink-0 accent-foreground"
               aria-invalid={!!err("confirmed") || undefined} aria-describedby={err("confirmed") ? "confirmed-error" : undefined} />
             {confirmLabel}
           </label>

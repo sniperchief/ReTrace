@@ -18,3 +18,11 @@ export function readFields(formData: FormData, names: readonly string[]): Record
 export function readAll(formData: FormData, name: string): string[] {
   return formData.getAll(name).map((v) => (typeof v === "string" ? v : ""));
 }
+
+/** Hidden field set by the first-run setup forms (see `/welcome`). */
+export const SETUP_FLOW_FIELD = "flow";
+
+/** True when a create form was submitted from the first-run setup flow. Only picks a redirect target. */
+export function isSetupFlow(formData: FormData): boolean {
+  return formData.get(SETUP_FLOW_FIELD) === "setup";
+}

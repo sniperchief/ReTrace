@@ -8,13 +8,13 @@ export function DraftList({ drafts, showGenerator = false }: { drafts: DraftSumm
   if (drafts.length === 0) return null;
   const t = getMessages();
   return (
-    <section className="mb-6 rounded-xl border border-accent/60 bg-accent/10 p-4">
-      <h2 className="font-semibold">{t.review.drafts}</h2>
+    <section className="mb-6 rounded-card border border-line-strong bg-tint p-4">
+      <h2 className="font-bold">{t.review.drafts}</h2>
       <p className="mb-2 text-xs text-muted">{t.review.draftsHint}</p>
       <ul className="space-y-2">
         {drafts.map((d) => (
           <li key={d.id}>
-            <Link href={`/repairs/${d.id}/review`} className="block rounded-lg bg-surface px-3 py-2 hover:outline hover:outline-brand">
+            <Link href={`/repairs/${d.id}/review`} className="block rounded-lg bg-surface px-3 py-2 hover:outline hover:outline-line-strong">
               <span className="text-sm font-medium">
                 {showGenerator ? `${d.generatorLabel} · ` : ""}
                 {formatDate(d.createdAt)}

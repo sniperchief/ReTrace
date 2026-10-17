@@ -75,13 +75,13 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
         title={t.review.title}
         back={generator ? { href: `/generators/${generator.id}`, label: generator.label } : undefined}
       />
-      <p className="mb-4 inline-block rounded-full bg-accent/15 px-3 py-1 text-xs font-medium text-accent">
+      <p className="mb-4 inline-block rounded-full border border-stage-line px-3 py-1 text-xs font-medium text-stage-line">
         {t.review.draftBadge}
       </p>
 
       {/* The technician's own words, always shown as they were captured. */}
       <Card className="mb-4 space-y-3">
-        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
+        <h2 className="text-xs font-medium text-muted">
           {source.kind === "voice" ? t.review.transcript : t.review.typedNotes}
         </h2>
         {transcriptPending ? (
@@ -96,7 +96,7 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
         )}
         {source.editedText && (
           <div>
-            <h3 className="text-xs font-medium uppercase tracking-wide text-muted">{t.review.correctedNotes}</h3>
+            <h3 className="text-xs font-medium text-muted">{t.review.correctedNotes}</h3>
             <p className="break-words whitespace-pre-line">{source.editedText}</p>
           </div>
         )}
@@ -105,7 +105,7 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
       {/* What happened, stated plainly. */}
       <div className="mb-4 space-y-3">
         {transcriptFailed && !source.editedText && (
-          <div role="alert" className="space-y-1 rounded-xl bg-danger-bg p-4 text-danger">
+          <div role="alert" className="space-y-1 rounded-card bg-danger-bg p-4 text-danger">
             <p className="font-medium">{t.review.transcriptionFailed}</p>
             <p className="text-sm">
               {failureText(t, source.kind === "voice" ? (source.transcriptionError ?? "interrupted") : "ai_error")}
@@ -115,13 +115,13 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
         )}
         {draft.notesForExtraction && !aiSuggestion && <ExtractionRunner run={run} />}
         {aiSuggestion?.status === "running" && (
-          <div className="rounded-xl border border-border bg-surface p-4 text-sm" aria-live="polite">
+          <div className="rounded-card border border-border bg-surface p-4 text-sm" aria-live="polite">
             {t.review.extracting}
             <AutoRefresh />
           </div>
         )}
         {aiSuggestion?.status === "failed" && (
-          <div role="alert" className="space-y-2 rounded-xl bg-danger-bg p-4 text-danger">
+          <div role="alert" className="space-y-2 rounded-card bg-danger-bg p-4 text-danger">
             <p className="font-medium">{t.review.extractionFailed}</p>
             <p className="text-sm">{failureText(t, aiSuggestion.error)}</p>
             <p className="text-sm">{t.review.manualHint}</p>
@@ -129,7 +129,7 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
           </div>
         )}
         {suggestion && (
-          <div className="space-y-2 rounded-xl border border-accent/60 bg-accent/10 p-4" aria-live="polite">
+          <div className="space-y-2 rounded-card border border-line-strong bg-tint p-4" aria-live="polite">
             <p className="font-medium">
               {!hasAnyField(suggestion.fields)
                 ? t.review.extractedEmpty
@@ -149,7 +149,7 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
       </div>
 
       {(!transcriptPending && aiSuggestion?.status !== "running") && (
-        <details className="mb-6 rounded-xl border border-border bg-surface p-4" open={transcriptFailed && !source.editedText}>
+        <details className="mb-6 rounded-card border border-border bg-surface p-4" open={transcriptFailed && !source.editedText}>
           <summary className="cursor-pointer font-medium">{t.review.correctNotes}</summary>
           <div className="mt-3">
             <NotesForm

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { GeneratorList } from "@/components/generator-list";
-import { Card, DetailList, EmptyState, LinkButton, PageHeader } from "@/components/ui";
+import { PlusIcon } from "@/components/icons";
+import { Card, DetailList, EmptyState, LinkButton, PageHeader, SectionHeader } from "@/components/ui";
 import { getMessages } from "@/i18n";
 import { getCustomer } from "@/server/data/customers";
 import { listGenerators } from "@/server/data/generators";
@@ -31,10 +32,14 @@ export default async function CustomerPage({ params }: PageProps<"/customers/[id
           ]}
         />
       </Card>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">{t.customers.generators}</h2>
-        <LinkButton href={`/generators/new?customerId=${customer.id}`}>+ {t.customers.addGenerator}</LinkButton>
-      </div>
+      <SectionHeader
+        title={t.customers.generators}
+        action={
+          <LinkButton href={`/generators/new?customerId=${customer.id}`} variant="secondary">
+            <PlusIcon size={16} /> {t.customers.addGenerator}
+          </LinkButton>
+        }
+      />
       {generators.length === 0 ? (
         <EmptyState>{t.customers.noGenerators}</EmptyState>
       ) : (

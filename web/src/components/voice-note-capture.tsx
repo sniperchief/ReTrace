@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { interpolate } from "@/i18n";
 import { useMessages } from "@/i18n/client";
 import { AUDIO_ACCEPT } from "@/lib/audio";
+import { MicIcon, StopIcon } from "./icons";
 import { buttonStyles } from "./ui";
 
 type Phase =
@@ -124,21 +125,21 @@ export function VoiceNoteCapture({
       )}
 
       {phase.kind === "sending" ? (
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4" aria-live="polite">
-          <span className="size-3 animate-ping rounded-full bg-accent" />
+        <div className="flex items-center gap-3 rounded-card border border-border bg-surface p-5" aria-live="polite">
+          <span className="size-3 animate-ping rounded-full bg-foreground" />
           <p className="text-sm">{t.voice.transcribing}</p>
         </div>
       ) : phase.kind === "recording" ? (
-        <div className="space-y-3 rounded-xl border border-border bg-surface p-4 text-center" aria-live="polite">
+        <div className="space-y-3 rounded-card border border-border bg-surface p-5 text-center" aria-live="polite">
           <p className="flex items-center justify-center gap-2 font-medium">
             <span className="size-3 animate-pulse rounded-full bg-danger" /> {t.voice.recording} {mmss(elapsed)} / {mmss(maxSeconds)}
           </p>
           <button type="button" className={`${buttonStyles.primary} w-full`} onClick={() => recorder.current?.stop()}>
-            ■ {t.voice.stop}
+            <StopIcon size={18} /> {t.voice.stop}
           </button>
         </div>
       ) : phase.kind === "recorded" ? (
-        <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
+        <div className="space-y-3 rounded-card border border-border bg-surface p-5">
           <audio controls src={phase.url} className="w-full" />
           <button type="button" className={`${buttonStyles.primary} w-full`} onClick={() => send(phase.blob)}>
             {t.voice.useRecording}
@@ -152,7 +153,7 @@ export function VoiceNoteCapture({
           {canRecord !== false && (
             <button type="button" className={`${buttonStyles.primary} min-h-14 w-full text-base`} onClick={start}
               disabled={canRecord === null}>
-              ● {t.voice.start}
+              <MicIcon size={20} /> {t.voice.start}
             </button>
           )}
           {canRecord === false && <p className="text-sm text-muted">{t.voice.micUnavailable}</p>}

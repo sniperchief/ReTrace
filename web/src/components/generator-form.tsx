@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { errorMessage } from "@/i18n";
 import { useMessages } from "@/i18n/client";
-import type { FormState } from "@/lib/form-data";
+import { SETUP_FLOW_FIELD, type FormState } from "@/lib/form-data";
 import { fuelTypes } from "@/lib/schemas/generator";
 import { Field, FormError, Select, SubmitButton, TextInput } from "./form";
 import { LinkButton } from "./ui";
@@ -24,11 +24,17 @@ export function GeneratorForm({
   initial,
   customers,
   cancelHref,
+  setupFlow = false,
+  submitLabel,
 }: {
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   initial: Values;
   customers: { id: string; name: string }[];
-  cancelHref: string;
+  /** Omit to hide Cancel (the setup flow has its own "Skip for now"). */
+  cancelHref?: string;
+  /** Submitted from the first-run setup flow: return to it after saving. */
+  setupFlow?: boolean;
+  submitLabel?: string;
 }) {
   const t = useMessages();
   const [state, formAction] = useActionState(action, {});
@@ -39,6 +45,7 @@ export function GeneratorForm({
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
+      {setupFlow && <input type="hidden" name={SETUP_FLOW_FIELD} value="setup" />}
       <FormError message={err("_form")} />
       <Field id="customerId" label={t.generators.customer} error={err("customerId")}>
         <Select id="customerId" name="customerId" defaultValue={values.customerId} required
@@ -82,8 +89,8 @@ export function GeneratorForm({
         </Field>
       </div>
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <LinkButton href={cancelHref} variant="secondary">{t.common.cancel}</LinkButton>
-        <SubmitButton label={t.common.save} pendingLabel={t.common.saving} />
+        {cancelHref && <LinkButton href={cancelHref} variant="secondary">{t.common.cancel}</LinkButton>}
+        <SubmitButton label={submitLabel ?? t.common.save} pendingLabel={t.common.saving} />
       </div>
     </form>
   );

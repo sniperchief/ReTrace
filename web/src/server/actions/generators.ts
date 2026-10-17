@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import { readFields, type FormState } from "@/lib/form-data";
+import { isSetupFlow, readFields, type FormState } from "@/lib/form-data";
 import { toFieldErrors } from "@/lib/schemas/common";
 import { generatorInputSchema } from "@/lib/schemas/generator";
 import { ConflictError, NotFoundError } from "@/server/data/errors";
@@ -43,7 +43,8 @@ async function save(generatorId: string | null, formData: FormData): Promise<For
   }
   revalidatePath("/generators");
   revalidatePath(`/customers/${parsed.data.customerId}`);
-  redirect(`/generators/${id}`);
+  // Only new generators come from the setup flow; edits always return to the generator.
+  redirect(!generatorId && isSetupFlow(formData) ? "/welcome" : `/generators/${id}`);
 }
 
 export async function createGeneratorAction(_prev: FormState, formData: FormData): Promise<FormState> {

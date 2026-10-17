@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
-import { readFields, type FormState } from "@/lib/form-data";
+import { isSetupFlow, readFields, type FormState } from "@/lib/form-data";
 import { toFieldErrors } from "@/lib/schemas/common";
 import { customerInputSchema } from "@/lib/schemas/customer";
 import { createCustomer, updateCustomer } from "@/server/data/customers";
@@ -19,7 +19,7 @@ export async function createCustomerAction(_prev: FormState, formData: FormData)
 
   const customer = await createCustomer(technician.id, parsed.data);
   revalidatePath("/customers");
-  redirect(`/customers/${customer.id}`);
+  redirect(isSetupFlow(formData) ? "/welcome" : `/customers/${customer.id}`);
 }
 
 export async function updateCustomerAction(

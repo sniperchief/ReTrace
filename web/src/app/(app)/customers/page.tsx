@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PlusIcon } from "@/components/icons";
 import { EmptyState, LinkButton, PageHeader, SearchForm } from "@/components/ui";
 import { getMessages } from "@/i18n";
 import { listCustomers } from "@/server/data/customers";
@@ -18,17 +19,17 @@ export default async function CustomersPage({ searchParams }: PageProps<"/custom
     <>
       <PageHeader
         title={t.customers.title}
-        action={<LinkButton href="/customers/new">+ {t.customers.new}</LinkButton>}
+        action={<LinkButton href="/customers/new" variant="secondary"><PlusIcon size={16} /> {t.customers.new}</LinkButton>}
       />
       <SearchForm action="/customers" defaultValue={query} placeholder={t.common.searchPlaceholder}
         buttonLabel={t.common.search} />
       {customers.length === 0 ? (
         <EmptyState>{query ? t.common.noResults : t.customers.empty}</EmptyState>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
+        <ul className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface">
           {customers.map((c) => (
             <li key={c.id}>
-              <Link href={`/customers/${c.id}`} className="block px-4 py-3 hover:bg-background">
+              <Link href={`/customers/${c.id}`} className="block px-5 py-4 hover:bg-tint">
                 <p className="font-medium break-words">{c.name}</p>
                 {(c.phone || c.location) && (
                   <p className="text-sm text-muted break-words">

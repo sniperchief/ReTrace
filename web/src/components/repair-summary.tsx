@@ -23,9 +23,9 @@ export function RepairSummary({
   const parts = repair.partsReplaced.map((p) => (p.quantity && p.quantity > 1 ? `${p.name} ×${p.quantity}` : p.name));
 
   return (
-    <Link href={`/repairs/${repair.id}`} className="block rounded-xl border border-border bg-surface p-4 hover:border-brand">
+    <Link href={`/repairs/${repair.id}`} className="block rounded-card border border-border bg-surface p-4 hover:border-line-strong">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-        <p className="font-semibold">
+        <p className="font-bold">
           {repair.repairDate ? formatDate(repair.repairDate) : t.repairs.undated}
         </p>
         {repair.totalCostKobo !== null && (

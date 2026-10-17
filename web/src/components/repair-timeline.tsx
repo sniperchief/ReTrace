@@ -21,7 +21,7 @@ export function RepairTimeline({ repairs }: { repairs: Repair[] }) {
       ))}
       {undated.length > 0 && (
         <>
-          <li className="-ml-5 pt-2 text-xs font-semibold uppercase tracking-wide text-muted">{t.timeline.undatedGroup}</li>
+          <li className="-ml-5 pt-2 text-xs font-bold text-muted">{t.timeline.undatedGroup}</li>
           {undated.map((r) => (
             <TimelineItem key={r.id} repair={r} heading={t.repairs.undated} />
           ))}
@@ -42,10 +42,10 @@ function TimelineItem({ repair, heading }: { repair: Repair; heading: string }) 
 
   return (
     <li className="relative">
-      <span className="absolute top-1.5 -left-[27px] size-3 rounded-full border-2 border-surface bg-brand" aria-hidden />
-      <article className="rounded-xl border border-border bg-surface p-4">
+      <span className="absolute top-1.5 -left-[27px] size-3 rounded-full border-2 border-background bg-foreground" aria-hidden />
+      <article className="rounded-card border border-border bg-surface p-4">
         <header className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3">
-          <h3 className="font-semibold">
+          <h3 className="font-bold">
             <Link href={`/repairs/${repair.id}`} className="hover:underline">
               {heading}
             </Link>
@@ -80,7 +80,7 @@ function TimelineItem({ repair, heading }: { repair: Repair; heading: string }) 
             </dd>
           </div>
         </dl>
-        <Link href={`/repairs/${repair.id}`} className="mt-2 inline-block text-sm text-brand underline">
+        <Link href={`/repairs/${repair.id}`} className="mt-2 inline-block text-sm text-foreground underline underline-offset-2">
           {t.timeline.open}
         </Link>
       </article>

@@ -62,8 +62,8 @@ export function ExtractionRunner({
   }, [run, router]);
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-border bg-surface p-4" aria-live="polite">
-      <span className="size-3 shrink-0 animate-ping rounded-full bg-accent" />
+    <div className="flex items-center gap-3 rounded-card border border-border bg-surface p-4" aria-live="polite">
+      <span className="size-3 shrink-0 animate-ping rounded-full bg-foreground" />
       <p className="text-sm">{t.review.extracting}</p>
     </div>
   );

@@ -14,7 +14,7 @@ function Sources({ refs }: { refs: SourceRef[] }) {
       {refs.map((ref, i) => (
         <Fragment key={ref.id}>
           {i > 0 && ", "}
-          <Link href={`/repairs/${ref.id}`} className="text-brand underline">
+          <Link href={`/repairs/${ref.id}`} className="text-foreground underline underline-offset-2">
             {ref.date ? formatDate(ref.date) : t.repairs.undated}
           </Link>
         </Fragment>
@@ -34,8 +34,8 @@ export function HistorySummaryCard({ summary }: { summary: HistorySummary }) {
   const missing = (Object.keys(s.notRecorded) as (keyof typeof s.notRecorded)[]).filter((k) => s.notRecorded[k] > 0);
 
   return (
-    <section aria-labelledby="summary-title" className="mb-6 rounded-xl border border-dashed border-brand/60 bg-brand/5 p-4">
-      <h2 id="summary-title" className="font-semibold">{t.summary.title}</h2>
+    <section aria-labelledby="summary-title" className="mb-6 rounded-card border border-dashed border-line-strong bg-tint p-4">
+      <h2 id="summary-title" className="font-bold">{t.summary.title}</h2>
       <p className="mb-3 text-xs text-muted">
         {s.recordCount === 1 ? t.summary.disclaimerOne : interpolate(t.summary.disclaimer, { count: s.recordCount })}
       </p>

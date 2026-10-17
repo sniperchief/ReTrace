@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { DraftList } from "@/components/draft-list";
 import { HistorySummaryCard } from "@/components/history-summary-card";
 import { RepairTimeline } from "@/components/repair-timeline";
-import { buttonStyles } from "@/components/ui";
+import { FormIcon, MicIcon, PlusIcon } from "@/components/icons";
+import { buttonStyles, inputClass, SectionHeader } from "@/components/ui";
 import { summariseHistory } from "@/lib/history-summary";
 import { listDrafts } from "@/server/data/drafts";
 import { getEnv } from "@/server/env";
@@ -40,7 +41,7 @@ export default async function GeneratorPage({ params }: PageProps<"/generators/[
             {
               label: t.generators.customer,
               value: (
-                <Link href={`/customers/${generator.customer.id}`} className="text-brand underline">
+                <Link href={`/customers/${generator.customer.id}`} className="text-foreground underline underline-offset-2">
                   {generator.customer.name}
                 </Link>
               ),
@@ -61,33 +62,33 @@ export default async function GeneratorPage({ params }: PageProps<"/generators/[
         />
       </Card>
 
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <LinkButton href={`/generators/${id}/voice-note`}>
-          {aiEnabled ? `🎙 ${t.voice.button}` : `📝 ${t.voice.quickNotes}`}
+      <div className="mb-8 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <LinkButton href={`/generators/${id}/voice-note`} className="min-h-12">
+          {aiEnabled ? <MicIcon size={18} /> : <FormIcon size={18} />}
+          {aiEnabled ? t.voice.button : t.voice.quickNotes}
         </LinkButton>
-        <LinkButton href={`/generators/${id}/repairs/new`} variant="secondary">
-          + {t.generators.addRepair}
+        <LinkButton href={`/generators/${id}/repairs/new`} variant="secondary" className="min-h-12">
+          <PlusIcon size={18} /> {t.generators.addRepair}
         </LinkButton>
       </div>
       <DraftList drafts={drafts} />
 
       {summary && <HistorySummaryCard summary={summary} />}
 
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h2 className="text-lg font-semibold">{t.timeline.title}</h2>
-          {history.length > 0 && <p className="text-xs text-muted">{t.timeline.hint}</p>}
-        </div>
-        {history.length > 0 && (
-          <form action="/repairs" method="get" role="search" className="flex w-full gap-2 sm:w-auto">
-            <input type="hidden" name="generator" value={id} />
-            <input name="q" type="search" maxLength={100} aria-label={t.search.searchThisGenerator}
-              placeholder={t.search.searchThisGenerator}
-              className="min-h-11 w-full min-w-0 rounded-lg border border-border bg-surface px-3 text-base sm:w-64" />
-            <button type="submit" className={buttonStyles.secondary}>{t.search.submit}</button>
-          </form>
-        )}
-      </div>
+      <SectionHeader
+        title={t.timeline.title}
+        hint={history.length > 0 ? t.timeline.hint : undefined}
+        action={
+          history.length > 0 && (
+            <form action="/repairs" method="get" role="search" className="flex w-full gap-2 sm:w-auto">
+              <input type="hidden" name="generator" value={id} />
+              <input name="q" type="search" maxLength={100} aria-label={t.search.searchThisGenerator}
+                placeholder={t.search.searchThisGenerator} className={`${inputClass} sm:w-64`} />
+              <button type="submit" className={buttonStyles.secondary}>{t.search.submit}</button>
+            </form>
+          )
+        }
+      />
       {history.length === 0 ? <EmptyState>{t.generators.noHistory}</EmptyState> : <RepairTimeline repairs={history} />}
     </>
   );

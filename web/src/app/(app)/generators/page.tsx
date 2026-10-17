@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GeneratorList } from "@/components/generator-list";
+import { PlusIcon } from "@/components/icons";
 import { EmptyState, LinkButton, PageHeader, SearchForm } from "@/components/ui";
 import { getMessages } from "@/i18n";
 import { listGenerators } from "@/server/data/generators";
@@ -18,7 +19,7 @@ export default async function GeneratorsPage({ searchParams }: PageProps<"/gener
     <>
       <PageHeader
         title={t.generators.title}
-        action={<LinkButton href="/generators/new">+ {t.generators.new}</LinkButton>}
+        action={<LinkButton href="/generators/new" variant="secondary"><PlusIcon size={16} /> {t.generators.new}</LinkButton>}
       />
       <SearchForm action="/generators" defaultValue={query} placeholder={t.common.searchPlaceholder}
         buttonLabel={t.common.search} />

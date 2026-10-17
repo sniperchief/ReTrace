@@ -29,7 +29,7 @@ export default async function RepairPage({ params }: PageProps<"/repairs/[id]">)
             {
               label: t.repairs.generator,
               value: (
-                <Link href={`/generators/${repair.generator.id}`} className="text-brand underline">
+                <Link href={`/generators/${repair.generator.id}`} className="text-foreground underline underline-offset-2">
                   {repair.generator.label}
                 </Link>
               ),
@@ -40,7 +40,7 @@ export default async function RepairPage({ params }: PageProps<"/repairs/[id]">)
           ]}
         />
         <div>
-          <h2 className="text-xs font-medium uppercase tracking-wide text-muted">{t.repairs.partsReplaced}</h2>
+          <h2 className="text-xs font-medium text-muted">{t.repairs.partsReplaced}</h2>
           {repair.partsReplaced.length === 0 ? (
             <p className="mt-0.5 text-muted">{t.repairs.noParts}</p>
           ) : (
@@ -77,14 +77,14 @@ export default async function RepairPage({ params }: PageProps<"/repairs/[id]">)
         />
       </Card>
       {repair.originalNotes && (
-        <details className="mt-4 rounded-xl border border-border bg-surface p-4">
+        <details className="mt-4 rounded-card border border-border bg-surface p-4">
           <summary className="cursor-pointer text-sm font-medium">
             {t.review.source} · {repair.sourceKind === "voice" ? t.review.sourceVoice : t.review.sourceText}
           </summary>
           <p className="mt-2 break-words whitespace-pre-line text-sm">{repair.originalNotes}</p>
           {repair.editedNotes && (
             <>
-              <h3 className="mt-3 text-xs font-medium uppercase tracking-wide text-muted">{t.review.correctedNotes}</h3>
+              <h3 className="mt-3 text-xs font-medium text-muted">{t.review.correctedNotes}</h3>
               <p className="break-words whitespace-pre-line text-sm">{repair.editedNotes}</p>
             </>
           )}

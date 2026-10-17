@@ -1,48 +1,62 @@
 @import "tailwindcss";
 
+/*
+ * Design system: docs/design/DESIGN.md.
+ * A deep violet stage (headers, hero) over an off-white working canvas, with
+ * one teal accent rationed to the primary action, the active nav indicator
+ * and one headline word. No shadows: edges are hairline borders.
+ */
 :root {
-  --background: #f6f5f2;
-  --surface: #ffffff;
-  --foreground: #1c1b19;
-  --muted: #6b6760;
-  --border: #e3e0d9;
-  --brand: #1f4d3f;
-  --brand-foreground: #ffffff;
-  --accent: #d97a1a;
+  --background: #fafafa; /* off-white canvas, never pure white */
+  --surface: #fafafa; /* cards sit on the canvas, separated by a border */
+  --tint: #f2f1f6; /* quiet panels: drafts, suggestions, summaries */
+  --foreground: #151035;
+  --muted: #5b5875;
+  --border: #eeeeee; /* hairlines on light surfaces */
+  --line-strong: #d3d3d3; /* control edges */
+  --stage: #151035; /* deep space violet */
+  --stage-line: #2f226c; /* rich violet */
+  --on-stage: #fafafa;
+  --on-stage-muted: #b9b6cf;
+  --accent: #1ccac7; /* bright teal */
+  --accent-foreground: #151035;
   --danger: #b42318;
   --danger-bg: #fef3f2;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #151513;
-    --surface: #1f1e1b;
-    --foreground: #f1efea;
-    --muted: #a39f96;
-    --border: #34322d;
-    --brand: #5fb393;
-    --brand-foreground: #0f1f19;
-    --accent: #f0a050;
-    --danger: #f97066;
-    --danger-bg: #2a1614;
-  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-tint: var(--tint);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
-  --color-brand: var(--brand);
-  --color-brand-foreground: var(--brand-foreground);
+  --color-line-strong: var(--line-strong);
+  --color-stage: var(--stage);
+  --color-stage-line: var(--stage-line);
+  --color-on-stage: var(--on-stage);
+  --color-on-stage-muted: var(--on-stage-muted);
   --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-danger: var(--danger);
   --color-danger-bg: var(--danger-bg);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Two-radius geometry: controls 8px (rounded-lg), cards 20px. */
+  --radius-card: 20px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  letter-spacing: -0.028em;
+}
+
+/* Bottom navigation on phones: keep content clear of the bar and the home indicator. */
+.pb-bottom-nav {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .pb-bottom-nav {
+    padding-bottom: 2.5rem;
+  }
 }
