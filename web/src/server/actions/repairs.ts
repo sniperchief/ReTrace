@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { readRepairForm, type RepairFormState } from "@/lib/repair-form";
 import { NotFoundError } from "@/server/data/errors";
-import { createRepair, updateRepair } from "@/server/data/repairs";
+import { createRepair, deleteRepair, updateRepair } from "@/server/data/repairs";
+import { setFlash } from "@/server/flash";
 import { requireTechnician } from "@/server/session";
 
 export async function createRepairAction(
@@ -25,6 +26,7 @@ export async function createRepairAction(
   }
   revalidatePath(`/generators/${generatorId}`);
   revalidatePath("/repairs");
+  await setFlash("repairSaved");
   redirect(`/repairs/${repairId}`);
 }
 
@@ -46,5 +48,21 @@ export async function updateRepairAction(
   }
   revalidatePath(`/generators/${generatorId}`);
   revalidatePath("/repairs");
+  await setFlash("repairSaved");
   redirect(`/repairs/${repairId}`);
+}
+
+export async function deleteRepairAction(repairId: string): Promise<void> {
+  const technician = await requireTechnician();
+  let generatorId: string;
+  try {
+    generatorId = await deleteRepair(technician.id, repairId);
+  } catch (error) {
+    if (error instanceof NotFoundError) notFound();
+    throw error;
+  }
+  revalidatePath(`/generators/${generatorId}`);
+  revalidatePath("/repairs");
+  await setFlash("repairDeleted");
+  redirect(`/generators/${generatorId}`);
 }

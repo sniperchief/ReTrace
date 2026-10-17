@@ -2,25 +2,32 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DraftList } from "@/components/draft-list";
 import { ChevronRightIcon, MicIcon } from "@/components/icons";
+import { ServiceDueList } from "@/components/service-due-list";
 import { SetupCard } from "@/components/setup";
 import { EmptyState, LinkButton, SearchForm, SectionHeader } from "@/components/ui";
-import { getMessages, interpolate } from "@/i18n";
+import { interpolate } from "@/i18n";
 import { formatDate } from "@/lib/format";
+import { serviceDueCutoff } from "@/lib/service";
 import { listDrafts } from "@/server/data/drafts";
+import { listServiceDue } from "@/server/data/generators";
 import { listRecentRepairs, type RepairWithGenerator } from "@/server/data/repairs";
 import { getSetupProgress } from "@/server/data/setup";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
-export const metadata: Metadata = { title: getMessages().home.title };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT()).home.title };
+}
 
 /** Action-first home: find a generator, start a repair, finish drafts, see recent work. */
 export default async function HomePage() {
   const technician = await requireTechnician();
-  const t = getMessages();
-  const [progress, drafts, repairs] = await Promise.all([
+  const t = await getT();
+  const [progress, drafts, repairs, due] = await Promise.all([
     getSetupProgress(technician.id),
     listDrafts(technician.id, { limit: 5 }),
     listRecentRepairs(technician.id, { limit: 20 }),
+    listServiceDue(technician.id, serviceDueCutoff()),
   ]);
   // Most recently recorded work, one row per generator (undated repairs count too).
   const recent = [...new Map(repairs.map((r) => [r.generator.id, r] as const)).values()].slice(0, 5);
@@ -48,6 +55,13 @@ export default async function HomePage() {
 
       <DraftList drafts={drafts} showGenerator />
 
+      {due.length > 0 && (
+        <section className="mb-8">
+          <SectionHeader title={t.service.dueTitle} hint={t.service.dueHint} />
+          <ServiceDueList items={due} technicianName={technician.name} />
+        </section>
+      )}
+
       <section>
         <SectionHeader
           title={t.home.recentTitle}
@@ -63,8 +77,8 @@ export default async function HomePage() {
   );
 }
 
-function RecentList({ repairs }: { repairs: RepairWithGenerator[] }) {
-  const t = getMessages();
+async function RecentList({ repairs }: { repairs: RepairWithGenerator[] }) {
+  const t = await getT();
   return (
     <ul className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface">
       {repairs.map((r) => (

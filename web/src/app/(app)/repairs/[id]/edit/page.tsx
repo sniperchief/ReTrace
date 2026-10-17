@@ -1,11 +1,12 @@
 import { notFound, redirect } from "next/navigation";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { RepairForm } from "@/components/repair-form";
 import { PageHeader } from "@/components/ui";
-import { getMessages } from "@/i18n";
 import { toDateInput } from "@/lib/format";
 import { koboToInput } from "@/lib/money";
-import { updateRepairAction } from "@/server/actions/repairs";
+import { deleteRepairAction, updateRepairAction } from "@/server/actions/repairs";
 import { getRepair } from "@/server/data/repairs";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
 export default async function EditRepairPage({ params }: PageProps<"/repairs/[id]/edit">) {
@@ -14,7 +15,7 @@ export default async function EditRepairPage({ params }: PageProps<"/repairs/[id
   const repair = await getRepair(technician.id, id);
   if (!repair) notFound();
   if (repair.status === "draft") redirect(`/repairs/${id}/review`);
-  const t = getMessages();
+  const t = await getT();
 
   return (
     <>
@@ -36,6 +37,8 @@ export default async function EditRepairPage({ params }: PageProps<"/repairs/[id
         }}
         cancelHref={`/repairs/${id}`}
       />
+      <ConfirmDelete action={deleteRepairAction.bind(null, id)} label={t.danger.deleteRepair}
+        confirmText={t.danger.deleteRepairConfirm} />
     </>
   );
 }

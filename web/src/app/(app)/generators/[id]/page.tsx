@@ -1,17 +1,29 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ContactButtons } from "@/components/contact";
 import { DraftList } from "@/components/draft-list";
 import { HistorySummaryCard } from "@/components/history-summary-card";
-import { RepairTimeline } from "@/components/repair-timeline";
 import { FormIcon, MicIcon, PlusIcon } from "@/components/icons";
-import { buttonStyles, inputClass, SectionHeader } from "@/components/ui";
+import { RepairTimeline } from "@/components/repair-timeline";
+import {
+  buttonStyles,
+  Card,
+  DetailList,
+  EmptyState,
+  inputClass,
+  LinkButton,
+  PageHeader,
+  SectionHeader,
+} from "@/components/ui";
+import { interpolate } from "@/i18n";
+import { formatDate } from "@/lib/format";
 import { summariseHistory } from "@/lib/history-summary";
+import { nextServiceDue } from "@/lib/service";
 import { listDrafts } from "@/server/data/drafts";
-import { getEnv } from "@/server/env";
-import { Card, DetailList, EmptyState, LinkButton, PageHeader } from "@/components/ui";
-import { getMessages } from "@/i18n";
 import { getGenerator } from "@/server/data/generators";
 import { getRepairHistory } from "@/server/data/repairs";
+import { getEnv } from "@/server/env";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
 export default async function GeneratorPage({ params }: PageProps<"/generators/[id]">) {
@@ -23,10 +35,12 @@ export default async function GeneratorPage({ params }: PageProps<"/generators/[
     listDrafts(technician.id, { generatorId: id }),
   ]);
   if (!generator || !history) notFound();
-  const t = getMessages();
+  const t = await getT();
   const summary = summariseHistory(history);
   const aiEnabled = getEnv().INFERENCE_MODE !== "off";
   const none = <span className="text-muted">{t.common.notRecorded}</span>;
+  const interval = generator.serviceIntervalMonths;
+  const nextDue = nextServiceDue(generator.lastRepairAt, interval);
 
   return (
     <>
@@ -41,9 +55,12 @@ export default async function GeneratorPage({ params }: PageProps<"/generators/[
             {
               label: t.generators.customer,
               value: (
-                <Link href={`/customers/${generator.customer.id}`} className="text-foreground underline underline-offset-2">
-                  {generator.customer.name}
-                </Link>
+                <>
+                  <Link href={`/customers/${generator.customer.id}`} className="text-foreground underline underline-offset-2">
+                    {generator.customer.name}
+                  </Link>
+                  {generator.customer.phone && <ContactButtons phone={generator.customer.phone} />}
+                </>
               ),
             },
             { label: t.generators.brand, value: generator.brand ?? none },
@@ -58,6 +75,18 @@ export default async function GeneratorPage({ params }: PageProps<"/generators/[
               value: generator.fuelType ? t.generators.fuelTypes[generator.fuelType] : none,
             },
             ...(generator.location ? [{ label: t.generators.location, value: generator.location }] : []),
+            ...(interval
+              ? [
+                  {
+                    label: t.service.next,
+                    value: nextDue
+                      ? formatDate(nextDue)
+                      : interpolate(t.service.nextNoRepair, {
+                          months: interval === 1 ? t.service.monthsOne : interpolate(t.service.months, { n: interval }),
+                        }),
+                  },
+                ]
+              : []),
           ]}
         />
       </Card>

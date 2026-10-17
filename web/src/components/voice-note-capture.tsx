@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { interpolate } from "@/i18n";
 import { useMessages } from "@/i18n/client";
 import { AUDIO_ACCEPT } from "@/lib/audio";
+import { queueRecording, uploadRecording } from "@/lib/voice-upload";
 import { MicIcon, StopIcon } from "./icons";
 import { buttonStyles } from "./ui";
 
@@ -13,7 +14,9 @@ type Phase =
   | { kind: "recording"; startedAt: number }
   | { kind: "recorded"; blob: Blob; url: string }
   | { kind: "sending" }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string }
+  /** Kept on the phone; the upload queue sends it later. */
+  | { kind: "queued"; message: string };
 
 const noopSubscribe = () => () => {};
 const MIME_CANDIDATES =["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audio/mp4", "audio/webm"];
@@ -21,10 +24,12 @@ const MIME_CANDIDATES =["audio/webm;codecs=opus", "audio/ogg;codecs=opus", "audi
 /** Records (or picks) a voice note and uploads it for transcription. Audio stays in memory only. */
 export function VoiceNoteCapture({
   generatorId,
+  generatorLabel,
   maxSeconds,
   maxBytes,
 }: {
   generatorId: string;
+  generatorLabel: string;
   maxSeconds: number;
   maxBytes: number;
 }) {
@@ -87,30 +92,33 @@ export function VoiceNoteCapture({
       setPhase({ kind: "error", message: interpolate(t.voice.tooLarge, { minutes }) });
       return;
     }
+    const keep = async (message: string) => {
+      try {
+        await queueRecording({ generatorId, generatorLabel, blob });
+        setPhase({ kind: "queued", message });
+      } catch {
+        setPhase({ kind: "error", message: t.voice.uploadFailed });
+      }
+    };
+    if (!navigator.onLine) return keep(t.voice.savedOffline);
+
     setPhase({ kind: "sending" });
-    let response: Response;
-    try {
-      response = await fetch(`/api/generators/${generatorId}/voice-notes`, {
-        method: "POST",
-        headers: { "content-type": blob.type || "application/octet-stream" },
-        body: blob,
-      });
-    } catch {
-      setPhase({ kind: "error", message: t.voice.uploadFailed });
+    const result = await uploadRecording(generatorId, blob);
+    if (result.status === "ok") {
+      router.push(`/repairs/${result.draftId}/review`);
       return;
     }
-    const body = (await response.json().catch(() => ({}))) as { draftId?: string; error?: string };
-    if (response.ok && body.draftId) {
-      // Success or a recorded transcription failure: the review page explains which.
-      router.push(`/repairs/${body.draftId}/review`);
-      return;
+    if (result.status === "retry") {
+      return keep(
+        result.error === "rate_limited" ? t.voice.rateLimited : result.error === "busy" ? t.voice.busy : t.voice.savedOffline,
+      );
     }
     const message =
-      body.error === "audio_too_large"
+      result.error === "audio_too_large"
         ? interpolate(t.voice.tooLarge, { minutes })
-        : body.error === "audio_unsupported"
+        : result.error === "audio_unsupported"
           ? t.voice.unsupported
-          : body.error === "ai_disabled"
+          : result.error === "ai_disabled"
             ? t.voice.aiDisabled
             : t.voice.uploadFailed;
     setPhase({ kind: "error", message });
@@ -124,7 +132,14 @@ export function VoiceNoteCapture({
         <p role="alert" className="rounded-lg bg-danger-bg px-3 py-2 text-sm text-danger">{phase.message}</p>
       )}
 
-      {phase.kind === "sending" ? (
+      {phase.kind === "queued" ? (
+        <div className="space-y-3 rounded-card border border-line-strong bg-tint p-5" role="status">
+          <p className="text-sm">{phase.message}</p>
+          <button type="button" className={`${buttonStyles.secondary} w-full`} onClick={() => setPhase({ kind: "idle" })}>
+            {t.voice.recordAgain}
+          </button>
+        </div>
+      ) : phase.kind === "sending" ? (
         <div className="flex items-center gap-3 rounded-card border border-border bg-surface p-5" aria-live="polite">
           <span className="size-3 animate-ping rounded-full bg-foreground" />
           <p className="text-sm">{t.voice.transcribing}</p>

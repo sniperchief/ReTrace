@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Wordmark } from "@/components/ui";
-import { getMessages } from "@/i18n";
+import { getT } from "@/server/i18n";
 
 /** A focused shell for the first-run flow: no app navigation, one way out. */
-export default function SetupLayout({ children }: { children: ReactNode }) {
-  const t = getMessages();
+export default async function SetupLayout({ children }: { children: ReactNode }) {
+  const t = await getT();
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <header className="bg-stage">

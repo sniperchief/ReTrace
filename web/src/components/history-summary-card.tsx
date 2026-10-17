@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Fragment } from "react";
-import { getMessages, interpolate } from "@/i18n";
+import { interpolate } from "@/i18n";
 import { formatDate } from "@/lib/format";
 import type { HistorySummary, SourceRef } from "@/lib/history-summary";
 import { formatNaira } from "@/lib/money";
+import { getT } from "@/server/i18n";
 
 /** Links to the records a summary line came from. */
-function Sources({ refs }: { refs: SourceRef[] }) {
-  const t = getMessages();
+async function Sources({ refs }: { refs: SourceRef[] }) {
+  const t = await getT();
   return (
     <span className="text-muted">
       {" ("}
@@ -28,8 +29,8 @@ function Sources({ refs }: { refs: SourceRef[] }) {
  * The automatic summary, visibly separate from the recorded history itself.
  * Every statement links to its source records.
  */
-export function HistorySummaryCard({ summary }: { summary: HistorySummary }) {
-  const t = getMessages();
+export async function HistorySummaryCard({ summary }: { summary: HistorySummary }) {
+  const t = await getT();
   const s = summary;
   const missing = (Object.keys(s.notRecorded) as (keyof typeof s.notRecorded)[]).filter((k) => s.notRecorded[k] > 0);
 

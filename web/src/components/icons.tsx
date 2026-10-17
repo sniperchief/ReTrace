@@ -48,3 +48,21 @@ export const CheckIcon = (p: IconProps) => (
 export const StopIcon = (p: IconProps) => (
   <Icon {...p}><rect x="6" y="6" width="12" height="12" rx="1.5" /></Icon>
 );
+export const PhoneIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></Icon>
+);
+export const ChatIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M4 20l1.3-3.9A8 8 0 1 1 8 19.1L4 20" /><path d="M9 10h6M9 13h4" /></Icon>
+);
+export const TrashIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></Icon>
+);
+export const ReceiptIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6M9 16h3" /></Icon>
+);
+export const WrenchIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M14.5 6.5a4 4 0 0 0 5 5L12 19a2.1 2.1 0 0 1-3-3l7.5-7.5a4 4 0 0 1-2-2z" /><path d="M14.5 6.5 17 4l3 3-2.5 2.5" /></Icon>
+);
+export const CloudOffIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M7 18h10a4 4 0 0 0 .7-7.9A6 6 0 0 0 6.3 9 4.5 4.5 0 0 0 7 18" /><path d="m3 3 18 18" /></Icon>
+);

@@ -4,6 +4,7 @@ import { getAuth } from "./auth";
 import { createVoiceDraft, recordTranscription } from "./data/drafts";
 import { NotFoundError } from "./data/errors";
 import { findOwnedGenerator } from "./data/generators";
+import { claimVoiceUpload } from "./data/voice-uploads";
 import { getEnv } from "./env";
 import { InferenceError, inferenceMode, transcribeAudio } from "./inference";
 
@@ -59,10 +60,19 @@ export async function handleVoiceNoteUpload(request: Request, generatorId: strin
     throw error;
   }
 
-  const { MAX_AUDIO_BYTES } = getEnv();
+  const { MAX_AUDIO_BYTES, VOICE_NOTES_PER_HOUR } = getEnv();
   let audio = await readLimited(request, MAX_AUDIO_BYTES);
   if (audio === null) return json(413, { error: "audio_too_large" });
   if (!sniffAudio(audio)) return json(415, { error: "audio_unsupported" });
+
+  // Checked after cheap validation so rejected files don't use up the quota.
+  const allowance = await claimVoiceUpload(technicianId, { perHour: VOICE_NOTES_PER_HOUR, maxConcurrent: 2 });
+  if (allowance !== "ok") {
+    return Response.json({ error: allowance } satisfies VoiceNoteResponse, {
+      status: 429,
+      headers: { "retry-after": allowance === "busy" ? "60" : "900" },
+    });
+  }
 
   // The draft exists before transcription, so a failure is recorded, not lost.
   const draftId = await createVoiceDraft(technicianId, generatorId);

@@ -35,9 +35,14 @@ export type GeneratorDoc = {
   location: string | null;
   searchKeys: string[];
   lastRepairAt: Date | null;
+  /** Absent on generators created before service reminders existed. */
+  serviceIntervalMonths?: number | null;
   createdAt: Date;
   updatedAt: Date;
 };
+
+/** One accepted voice-note upload, kept for a day to rate-limit the shared AI server. */
+export type VoiceUploadDoc = { _id: ObjectId; technicianId: string; at: Date };
 
 export type RepairPart = { name: string; quantity: number | null; costKobo: number | null };
 
@@ -102,4 +107,5 @@ export const collections = {
   customers: () => getDb().collection<CustomerDoc>("customers"),
   generators: () => getDb().collection<GeneratorDoc>("generators"),
   repairs: () => getDb().collection<RepairDoc>("repairs"),
+  voiceUploads: () => getDb().collection<VoiceUploadDoc>("voiceUploads"),
 };

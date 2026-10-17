@@ -2,6 +2,7 @@ import "server-only";
 import { MongoServerError, type ObjectId } from "mongodb";
 import type { GeneratorInput } from "@/lib/schemas/generator";
 import { searchKeysFilter } from "@/lib/search";
+import { nextServiceDue } from "@/lib/service";
 import { collections, type CustomerDoc, type GeneratorDoc } from "./collections";
 import { ConflictError, NotFoundError } from "./errors";
 import { toObjectId } from "./ids";
@@ -18,6 +19,7 @@ export type Generator = {
   fuelType: GeneratorDoc["fuelType"];
   location: string | null;
   lastRepairAt: Date | null;
+  serviceIntervalMonths: number | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -38,6 +40,7 @@ export function toGenerator(doc: GeneratorDoc): Generator {
     fuelType: doc.fuelType,
     location: doc.location,
     lastRepairAt: doc.lastRepairAt,
+    serviceIntervalMonths: doc.serviceIntervalMonths ?? null,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };
@@ -73,6 +76,7 @@ export async function createGenerator(technicianId: string, input: GeneratorInpu
     location: input.location,
     searchKeys: generatorSearchKeys(input, customer),
     lastRepairAt: null,
+    serviceIntervalMonths: input.serviceIntervalMonths ?? null,
     createdAt: now,
     updatedAt: now,
   };
@@ -105,6 +109,7 @@ export async function updateGenerator(
           capacityKva: input.capacityKva,
           fuelType: input.fuelType,
           location: input.location,
+          serviceIntervalMonths: input.serviceIntervalMonths ?? null,
           searchKeys: generatorSearchKeys(input, customer),
           updatedAt: new Date(),
         },
@@ -219,4 +224,36 @@ export async function refreshLastRepairAt(technicianId: string, generatorId: Obj
   await collections
     .generators()
     .updateOne({ _id: generatorId, technicianId }, { $set: { lastRepairAt: latest?.repairDate ?? null } });
+}
+
+/**
+ * Deletes a generator together with its whole history (confirmed repairs and
+ * drafts). The UI warns with the record count first. Returns the customer id.
+ */
+export async function deleteGenerator(technicianId: string, generatorId: string): Promise<string> {
+  const generator = await findOwnedGenerator(technicianId, generatorId);
+  await collections.repairs().deleteMany({ technicianId, generatorId: generator._id });
+  await collections.generators().deleteOne({ _id: generator._id, technicianId });
+  return generator.customerId.toHexString();
+}
+
+export type ServiceDue = GeneratorWithCustomer & { dueAt: Date };
+
+/**
+ * Generators with a service interval whose next service (last dated repair +
+ * interval) falls on or before `until`: overdue first, then soonest.
+ */
+export async function listServiceDue(technicianId: string, until: Date, limit = 10): Promise<ServiceDue[]> {
+  const docs = await collections
+    .generators()
+    .find({ technicianId, serviceIntervalMonths: { $gte: 1 }, lastRepairAt: { $ne: null } })
+    .limit(1000)
+    .toArray();
+  const due = docs
+    .map((doc) => ({ doc, dueAt: nextServiceDue(doc.lastRepairAt, doc.serviceIntervalMonths ?? null) }))
+    .filter((d): d is { doc: GeneratorDoc; dueAt: Date } => !!d.dueAt && d.dueAt <= until)
+    .sort((a, b) => a.dueAt.getTime() - b.dueAt.getTime())
+    .slice(0, limit);
+  const withCustomer = await withCustomers(technicianId, due.map((d) => d.doc));
+  return withCustomer.map((g, i) => ({ ...g, dueAt: due[i].dueAt }));
 }

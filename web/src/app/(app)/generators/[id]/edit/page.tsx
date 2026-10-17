@@ -1,10 +1,13 @@
 import { notFound } from "next/navigation";
+import { ConfirmDelete } from "@/components/confirm-delete";
 import { GeneratorForm } from "@/components/generator-form";
 import { PageHeader } from "@/components/ui";
-import { getMessages } from "@/i18n";
-import { updateGeneratorAction } from "@/server/actions/generators";
+import { interpolate } from "@/i18n";
+import { deleteGeneratorAction, updateGeneratorAction } from "@/server/actions/generators";
 import { listCustomers } from "@/server/data/customers";
 import { getGenerator } from "@/server/data/generators";
+import { countGeneratorRecords } from "@/server/data/repairs";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
 export default async function EditGeneratorPage({ params }: PageProps<"/generators/[id]/edit">) {
@@ -12,8 +15,11 @@ export default async function EditGeneratorPage({ params }: PageProps<"/generato
   const { id } = await params;
   const generator = await getGenerator(technician.id, id);
   if (!generator) notFound();
-  const customers = await listCustomers(technician.id, { limit: 1000 });
-  const t = getMessages();
+  const [customers, records] = await Promise.all([
+    listCustomers(technician.id, { limit: 1000 }),
+    countGeneratorRecords(technician.id, id),
+  ]);
+  const t = await getT();
 
   return (
     <>
@@ -30,8 +36,16 @@ export default async function EditGeneratorPage({ params }: PageProps<"/generato
           capacityKva: generator.capacityKva?.toString() ?? "",
           fuelType: generator.fuelType ?? "",
           location: generator.location ?? "",
+          serviceIntervalMonths: generator.serviceIntervalMonths?.toString() ?? "",
         }}
         cancelHref={`/generators/${id}`}
+      />
+      <ConfirmDelete
+        action={deleteGeneratorAction.bind(null, id)}
+        label={t.danger.deleteGenerator}
+        confirmText={
+          records > 0 ? interpolate(t.danger.deleteGeneratorConfirm, { count: records }) : t.danger.deleteGeneratorConfirmEmpty
+        }
       />
     </>
   );

@@ -163,3 +163,21 @@ export async function listRecentRepairs(
     generator: { id: d.generatorId.toHexString(), label: labels.get(d.generatorId.toHexString()) ?? "" },
   }));
 }
+
+/** Deletes a confirmed repair record. Returns its generator id. */
+export async function deleteRepair(technicianId: string, id: string): Promise<string> {
+  const _id = toObjectId(id);
+  if (!_id) throw new NotFoundError("repair");
+  // Drafts have their own "discard" path.
+  const doc = await collections.repairs().findOneAndDelete({ _id, technicianId, status: "confirmed" });
+  if (!doc) throw new NotFoundError("repair");
+  await refreshLastRepairAt(technicianId, doc.generatorId);
+  return doc.generatorId.toHexString();
+}
+
+/** Confirmed repairs and drafts on one generator (for the delete warning). */
+export async function countGeneratorRecords(technicianId: string, generatorId: string): Promise<number> {
+  const _id = toObjectId(generatorId);
+  if (!_id) return 0;
+  return collections.repairs().countDocuments({ technicianId, generatorId: _id });
+}

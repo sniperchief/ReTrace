@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { getMessages, interpolate } from "@/i18n";
+import { interpolate } from "@/i18n";
 import type { SetupStep } from "@/server/data/setup";
+import { getT } from "@/server/i18n";
 import { CheckIcon } from "./icons";
 import { buttonStyles } from "./ui";
 
 /** "Step 2 of 3" with the three named steps; finished steps are ticked. */
-export function StepIndicator({ step }: { step: SetupStep }) {
-  const t = getMessages();
+export async function StepIndicator({ step }: { step: SetupStep }) {
+  const t = await getT();
   return (
     <div className="mb-8">
       <p className="mb-3 text-sm font-medium text-muted">{interpolate(t.setup.stepOf, { n: step })}</p>
@@ -30,8 +31,8 @@ export function StepIndicator({ step }: { step: SetupStep }) {
 }
 
 /** Home-screen reminder for a technician who skipped part of the setup. */
-export function SetupCard({ step }: { step: SetupStep }) {
-  const t = getMessages();
+export async function SetupCard({ step }: { step: SetupStep }) {
+  const t = await getT();
   return (
     <section aria-labelledby="setup-title" className="mb-8 rounded-card bg-stage p-5 text-on-stage">
       <p className="text-xs font-medium text-on-stage-muted">{interpolate(t.setup.stepOf, { n: step })}</p>

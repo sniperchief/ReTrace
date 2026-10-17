@@ -4,8 +4,9 @@ import { AutoRefresh } from "@/components/auto-refresh";
 import { DiscardDraftButton, ExtractionRunner, NotesForm, RetryButton } from "@/components/draft-components";
 import { RepairForm } from "@/components/repair-form";
 import { Card, PageHeader } from "@/components/ui";
-import { getMessages, interpolate, type Messages } from "@/i18n";
+import { interpolate, type Messages } from "@/i18n";
 import { hasAnyField, type ExtractionFlag } from "@/lib/extraction";
+import { todayDateInput } from "@/lib/format";
 import { toRepairFormValues } from "@/lib/repair-form";
 import {
   confirmDraftAction,
@@ -16,9 +17,12 @@ import {
 import { getDraft } from "@/server/data/drafts";
 import { getGenerator } from "@/server/data/generators";
 import { getRepair } from "@/server/data/repairs";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
-export const metadata: Metadata = { title: getMessages().review.title };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT()).review.title };
+}
 
 // Extraction runs as a Server Action on this page and may take a while on the free CPU host.
 export const maxDuration = 300;
@@ -56,7 +60,7 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
     notFound();
   }
   const generator = await getGenerator(technician.id, draft.generatorId);
-  const t = getMessages();
+  const t = await getT();
   const { source, aiSuggestion } = draft;
 
   const transcriptPending = source.kind === "voice" && source.transcriptStatus === "pending";
@@ -66,6 +70,10 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
   const rulesFields = Object.entries(suggestion?.sources ?? {})
     .filter(([, source]) => source === "rules")
     .map(([field]) => flagLabel(t, field));
+  // While notes are still being turned into a suggestion, the form isn't shown:
+  // it would be replaced (and any ticks or edits lost) when the suggestion arrives.
+  const filling =
+    transcriptPending || aiSuggestion?.status === "running" || (!!draft.notesForExtraction && !aiSuggestion);
   const run = runExtractionAction.bind(null, id, false);
   const retry = runExtractionAction.bind(null, id, true);
 
@@ -148,7 +156,7 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
         )}
       </div>
 
-      {(!transcriptPending && aiSuggestion?.status !== "running") && (
+      {!filling && (
         <details className="mb-6 rounded-card border border-border bg-surface p-4" open={transcriptFailed && !source.editedText}>
           <summary className="cursor-pointer font-medium">{t.review.correctNotes}</summary>
           <div className="mt-3">
@@ -163,14 +171,17 @@ export default async function ReviewDraftPage({ params }: PageProps<"/repairs/[i
         </details>
       )}
 
-      <RepairForm
-        key={suggestion?.createdAt.toISOString() ?? "empty"}
-        action={confirmDraftAction.bind(null, id)}
-        initial={toRepairFormValues(suggestion?.fields ?? null)}
-        cancelHref={generator ? `/generators/${generator.id}` : "/repairs"}
-        submitLabel={t.review.confirmButton}
-        confirmLabel={t.review.confirmCheckbox}
-      />
+      {!filling && (
+        <RepairForm
+          key={suggestion?.createdAt.toISOString() ?? "empty"}
+          action={confirmDraftAction.bind(null, id)}
+          // Notes rarely say the date; the job is usually recorded the day it was done.
+          initial={toRepairFormValues(suggestion?.fields ?? null, { repairDate: todayDateInput() })}
+          cancelHref={generator ? `/generators/${generator.id}` : "/repairs"}
+          submitLabel={t.review.confirmButton}
+          confirmLabel={t.review.confirmCheckbox}
+        />
+      )}
 
       <div className="mt-6 border-t border-border pt-4">
         <DiscardDraftButton action={discardDraftAction.bind(null, id)} label={t.review.discard}

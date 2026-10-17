@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { getMessages } from "@/i18n";
 import { formatDate } from "@/lib/format";
 import type { DraftSummary } from "@/server/data/drafts";
+import { getT } from "@/server/i18n";
 
 /** Unconfirmed AI-assisted drafts. Shown apart from repair history. */
-export function DraftList({ drafts, showGenerator = false }: { drafts: DraftSummary[]; showGenerator?: boolean }) {
+export async function DraftList({ drafts, showGenerator = false }: { drafts: DraftSummary[]; showGenerator?: boolean }) {
   if (drafts.length === 0) return null;
-  const t = getMessages();
+  const t = await getT();
   return (
     <section className="mb-6 rounded-card border border-line-strong bg-tint p-4">
       <h2 className="font-bold">{t.review.drafts}</h2>

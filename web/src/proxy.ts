@@ -26,5 +26,5 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // Pages only. API routes authenticate themselves and answer 401 as JSON.
-  matcher: ["/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|svg|ico|webp)$).*)"],
+  matcher: ["/((?!api/|_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:png|jpg|svg|ico|webp)$).*)"],
 };

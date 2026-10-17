@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Card, DetailList, LinkButton, PageHeader } from "@/components/ui";
-import { getMessages } from "@/i18n";
+import { ChatIcon, ReceiptIcon } from "@/components/icons";
+import { buttonStyles, Card, DetailList, LinkButton, PageHeader } from "@/components/ui";
 import { formatDate } from "@/lib/format";
+import { repairMessage } from "@/lib/customer-messages";
 import { formatNaira } from "@/lib/money";
+import { whatsappHref } from "@/lib/phone";
+import { getGenerator } from "@/server/data/generators";
 import { getRepair } from "@/server/data/repairs";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
 export default async function RepairPage({ params }: PageProps<"/repairs/[id]">) {
@@ -13,7 +17,19 @@ export default async function RepairPage({ params }: PageProps<"/repairs/[id]">)
   const repair = await getRepair(technician.id, id);
   if (!repair) notFound();
   if (repair.status === "draft") redirect(`/repairs/${id}/review`);
-  const t = getMessages();
+  const generator = await getGenerator(technician.id, repair.generator.id);
+  const t = await getT();
+  const phone = generator?.customer.phone ?? null;
+  const message = repairMessage(t, {
+    customerName: generator?.customer.name ?? "",
+    generatorLabel: repair.generator.label,
+    date: repair.repairDate ? formatDate(repair.repairDate) : t.repairs.undated,
+    reportedSymptoms: repair.reportedSymptoms,
+    workPerformed: repair.workPerformed,
+    parts: repair.partsReplaced,
+    totalKobo: repair.totalCostKobo,
+    technicianName: technician.name,
+  });
   const none = <span className="text-muted">{t.common.notRecorded}</span>;
 
   return (
@@ -23,6 +39,20 @@ export default async function RepairPage({ params }: PageProps<"/repairs/[id]">)
         back={{ href: `/generators/${repair.generator.id}`, label: repair.generator.label }}
         action={<LinkButton href={`/repairs/${id}/edit`} variant="secondary">{t.common.edit}</LinkButton>}
       />
+      <div className="mb-6">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {phone ? (
+            <a href={whatsappHref(phone, message)} target="_blank" rel="noopener noreferrer"
+              className={`${buttonStyles.secondary} min-h-12`}>
+              <ChatIcon size={18} /> {t.share.sendToCustomer}
+            </a>
+          ) : null}
+          <LinkButton href={`/repairs/${id}/receipt`} variant="secondary" className={phone ? "min-h-12" : "min-h-12 sm:col-span-2"}>
+            <ReceiptIcon size={18} /> {t.share.receipt}
+          </LinkButton>
+        </div>
+        {!phone && <p className="mt-2 text-xs text-muted">{t.share.noPhone}</p>}
+      </div>
       <Card className="space-y-5">
         <DetailList
           items={[

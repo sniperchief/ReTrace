@@ -13,6 +13,8 @@ const coreSchema = z.object({
   AUTH_URL: text(z.url().optional()),
   MAX_AUDIO_BYTES: z.coerce.number().int().min(10_000).max(4_400_000).default(4_000_000),
   MAX_AUDIO_SECONDS: z.coerce.number().int().min(10).max(600).default(180),
+  /** Voice notes one technician may send per hour (protects the shared free AI server). */
+  VOICE_NOTES_PER_HOUR: z.coerce.number().int().min(1).max(1000).default(20),
 });
 
 /**

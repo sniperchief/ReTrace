@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { GeneratorForm } from "@/components/generator-form";
 import { EmptyState, LinkButton, PageHeader } from "@/components/ui";
-import { getMessages } from "@/i18n";
 import { createGeneratorAction } from "@/server/actions/generators";
 import { listCustomers } from "@/server/data/customers";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
-export const metadata: Metadata = { title: getMessages().generators.new };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT()).generators.new };
+}
 
 export default async function NewGeneratorPage({ searchParams }: PageProps<"/generators/new">) {
   const technician = await requireTechnician();
-  const t = getMessages();
+  const t = await getT();
   const customers = await listCustomers(technician.id, { limit: 1000 });
   const { customerId } = await searchParams;
   const preselected =
@@ -38,6 +40,7 @@ export default async function NewGeneratorPage({ searchParams }: PageProps<"/gen
             capacityKva: "",
             fuelType: "",
             location: "",
+            serviceIntervalMonths: "",
           }}
           cancelHref={backHref}
         />

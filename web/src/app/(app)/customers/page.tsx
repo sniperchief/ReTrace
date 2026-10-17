@@ -2,15 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PlusIcon } from "@/components/icons";
 import { EmptyState, LinkButton, PageHeader, SearchForm } from "@/components/ui";
-import { getMessages } from "@/i18n";
 import { listCustomers } from "@/server/data/customers";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
-export const metadata: Metadata = { title: getMessages().customers.title };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT()).customers.title };
+}
 
 export default async function CustomersPage({ searchParams }: PageProps<"/customers">) {
   const technician = await requireTechnician();
-  const t = getMessages();
+  const t = await getT();
   const { q } = await searchParams;
   const query = typeof q === "string" ? q.slice(0, 100) : undefined;
   const customers = await listCustomers(technician.id, { query });

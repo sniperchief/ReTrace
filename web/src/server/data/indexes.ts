@@ -27,4 +27,9 @@ export async function ensureIndexes(db: Db): Promise<void> {
     // Repair search: confirmed records of one technician, newest first.
     { key: { technicianId: 1, status: 1, repairDate: -1, createdAt: -1 }, name: "technician_status_date" },
   ]);
+  await db.collection("voiceUploads").createIndexes([
+    { key: { technicianId: 1, at: -1 }, name: "technician_at" },
+    // Upload events only matter for the rate limit; MongoDB removes them after a day.
+    { key: { at: 1 }, name: "expire_after_day", expireAfterSeconds: 24 * 60 * 60 },
+  ]);
 }

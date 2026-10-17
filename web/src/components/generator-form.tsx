@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState } from "react";
-import { errorMessage } from "@/i18n";
+import { errorMessage, interpolate } from "@/i18n";
 import { useMessages } from "@/i18n/client";
 import { SETUP_FLOW_FIELD, type FormState } from "@/lib/form-data";
-import { fuelTypes } from "@/lib/schemas/generator";
+import { fuelTypes, serviceIntervals } from "@/lib/schemas/generator";
 import { Field, FormError, Select, SubmitButton, TextInput } from "./form";
 import { LinkButton } from "./ui";
 
@@ -17,6 +17,7 @@ type Values = {
   capacityKva: string;
   fuelType: string;
   location: string;
+  serviceIntervalMonths: string;
 };
 
 export function GeneratorForm({
@@ -88,6 +89,16 @@ export function GeneratorForm({
             invalid={!!err("location")} />
         </Field>
       </div>
+      <Field id="serviceIntervalMonths" label={t.service.interval} optionalLabel={optional}
+        hint={t.service.intervalHint} error={err("serviceIntervalMonths")}>
+        <Select id="serviceIntervalMonths" name="serviceIntervalMonths" defaultValue={values.serviceIntervalMonths}
+          invalid={!!err("serviceIntervalMonths")}>
+          <option value="">{t.service.none}</option>
+          {serviceIntervals.map((n) => (
+            <option key={n} value={n}>{n === 1 ? t.service.monthsOne : interpolate(t.service.months, { n })}</option>
+          ))}
+        </Select>
+      </Field>
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         {cancelHref && <LinkButton href={cancelHref} variant="secondary">{t.common.cancel}</LinkButton>}
         <SubmitButton label={submitLabel ?? t.common.save} pendingLabel={t.common.saving} />

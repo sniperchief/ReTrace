@@ -51,6 +51,30 @@ body {
   letter-spacing: -0.028em;
 }
 
+/*
+ * Tailwind v4 no longer gives buttons a pointer cursor. Restore it for
+ * everything clickable; disabled controls keep the default arrow.
+ */
+@layer base {
+  a[href],
+  button,
+  [role="button"],
+  summary,
+  select,
+  label:has(> input[type="file"]),
+  label:has(> input[type="checkbox"]),
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  input[type="submit"] {
+    cursor: pointer;
+  }
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: default;
+  }
+}
+
 /* Bottom navigation on phones: keep content clear of the bar and the home indicator. */
 .pb-bottom-nav {
   padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
@@ -58,5 +82,16 @@ body {
 @media (min-width: 768px) {
   .pb-bottom-nav {
     padding-bottom: 2.5rem;
+  }
+}
+
+/* Printed receipts keep their dark header band. */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .pb-bottom-nav {
+    padding-bottom: 0;
   }
 }

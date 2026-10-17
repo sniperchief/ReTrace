@@ -32,6 +32,19 @@ Decisions: bottom nav on phones; hero + 3-step "how it works"; setup steps can b
 - Tokens in `src/app/globals.css`; Work Sans; icons in `components/icons.tsx`. Automatic dark mode was dropped (dark stage + light canvas instead).
 - 156 tests pass (4 new in `tests/integration/setup.test.ts`); every page checked at 360px with no horizontal overflow.
 
+## Improvements after the redesign (2026-10-17)
+
+- Repair date defaults to today on review; review hides the form until the notes have filled it.
+- Call/WhatsApp buttons; "Last time" note when starting a repair; save/delete confirmations (`lib/flash.ts`, one `<Flash />` in the root layout).
+- Delete customer (only without generators), generator (with its history, warned), repair — from each Edit page.
+- Send repair to customer on WhatsApp + printable receipt (`/repairs/[id]/receipt`).
+- Offline voice notes: kept in IndexedDB and uploaded later (`lib/voice-upload.ts`, `components/upload-queue.tsx`).
+- Service reminders: optional `serviceIntervalMonths` per generator; "Due for service" on home.
+- Nigerian Pidgin (`i18n/messages/pcm.ts`, needs a native-speaker review); language cookie read via `getT()` in `server/i18n.ts`, so every page now renders per request.
+- Installable app: `app/manifest.ts`, icons; error pages + `instrumentation.ts` logging.
+- Voice-note rate limit: `VOICE_NOTES_PER_HOUR` (default 20), 2 concurrent; run `npm run db:indexes` on production once (TTL index for `voiceUploads`).
+- CI: `.github/workflows/ci.yml` runs typecheck, lint, tests, build and Playwright (`npm run e2e`; locally `PW_CHANNEL=msedge`).
+
 ## Original redesign brief
 
 Use the design system in **`docs/design/DESIGN.md`**:

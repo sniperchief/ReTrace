@@ -5,15 +5,18 @@ import { GeneratorForm } from "@/components/generator-form";
 import { FormIcon, MicIcon } from "@/components/icons";
 import { StepIndicator } from "@/components/setup";
 import { LinkButton } from "@/components/ui";
-import { getMessages, interpolate } from "@/i18n";
+import { interpolate } from "@/i18n";
 import { createCustomerAction } from "@/server/actions/customers";
 import { createGeneratorAction } from "@/server/actions/generators";
 import { listCustomers } from "@/server/data/customers";
 import { getSetupProgress } from "@/server/data/setup";
 import { getEnv } from "@/server/env";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
-export const metadata: Metadata = { title: getMessages().setup.title };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT()).setup.title };
+}
 
 /**
  * First-run flow: customer → generator (customer preselected) → first repair.
@@ -23,7 +26,7 @@ export default async function WelcomePage() {
   const technician = await requireTechnician();
   const progress = await getSetupProgress(technician.id);
   if (progress.done) redirect("/home");
-  const t = getMessages();
+  const t = await getT();
   const s = t.setup;
 
   const heading = (title: string, intro: string) => (
@@ -62,6 +65,7 @@ export default async function WelcomePage() {
             capacityKva: "",
             fuelType: "",
             location: "",
+            serviceIntervalMonths: "",
           }}
           setupFlow
           submitLabel={s.continueLabel}

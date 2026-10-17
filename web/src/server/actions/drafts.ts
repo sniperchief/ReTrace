@@ -9,6 +9,7 @@ import { toFieldErrors } from "@/lib/schemas/common";
 import { confirmDraft, createTextDraft, discardDraft, setEditedNotes } from "@/server/data/drafts";
 import { NotFoundError } from "@/server/data/errors";
 import { runExtraction, type ExtractionOutcome } from "@/server/extraction";
+import { setFlash } from "@/server/flash";
 import { requireTechnician } from "@/server/session";
 
 function rethrowNotFound(error: unknown): never {
@@ -86,6 +87,7 @@ export async function confirmDraftAction(
   }
   revalidatePath(`/generators/${generatorId}`);
   revalidatePath("/repairs");
+  await setFlash("repairSaved");
   redirect(`/repairs/${draftId}`);
 }
 
@@ -98,5 +100,6 @@ export async function discardDraftAction(draftId: string): Promise<void> {
     rethrowNotFound(error);
   }
   revalidatePath(`/generators/${generatorId}`);
+  await setFlash("draftDiscarded");
   redirect(`/generators/${generatorId}`);
 }

@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { LanguageSwitch } from "@/components/language-switch";
 import { buttonStyles, Wordmark } from "@/components/ui";
-import { getMessages } from "@/i18n";
+import { getT } from "@/server/i18n";
 
 // Signed-in technicians are sent to /home by the proxy before reaching here,
 // so this page reads no session and renders fully static.
-export default function Landing() {
-  const t = getMessages();
+export default async function Landing() {
+  const t = await getT();
   const l = t.landing;
 
   return (
@@ -13,9 +14,12 @@ export default function Landing() {
       <section className="overflow-hidden bg-stage text-on-stage">
         <header className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-3 px-4 md:h-16">
           <Wordmark href="/" />
-          <Link href="/sign-in" className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-on-stage-muted hover:text-on-stage">
-            {l.signIn}
-          </Link>
+          <div className="flex items-center">
+            <LanguageSwitch />
+            <Link href="/sign-in" className="inline-flex min-h-11 items-center px-2 text-sm font-medium text-on-stage-muted hover:text-on-stage">
+              {l.signIn}
+            </Link>
+          </div>
         </header>
 
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center px-4 pt-14 text-center md:pt-24">
@@ -59,8 +63,8 @@ export default function Landing() {
  * A drawn (not screenshotted) generator record, cropped at the bottom edge of
  * the hero like the design system's product frame. Decorative only.
  */
-function ProductPreview() {
-  const l = getMessages().landing;
+async function ProductPreview() {
+  const l = (await getT()).landing;
   return (
     <div aria-hidden className="mt-14 w-full max-w-2xl translate-y-6 text-left md:mt-20">
       <div className="rounded-t-card border border-b-0 border-stage-line bg-stage-line/30 p-5 pb-10 sm:p-7 sm:pb-12">

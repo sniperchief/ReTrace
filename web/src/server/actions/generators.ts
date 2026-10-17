@@ -6,7 +6,8 @@ import { isSetupFlow, readFields, type FormState } from "@/lib/form-data";
 import { toFieldErrors } from "@/lib/schemas/common";
 import { generatorInputSchema } from "@/lib/schemas/generator";
 import { ConflictError, NotFoundError } from "@/server/data/errors";
-import { createGenerator, updateGenerator } from "@/server/data/generators";
+import { createGenerator, deleteGenerator, updateGenerator } from "@/server/data/generators";
+import { setFlash } from "@/server/flash";
 import { requireTechnician } from "@/server/session";
 
 const FIELDS = [
@@ -18,6 +19,7 @@ const FIELDS = [
   "capacityKva",
   "fuelType",
   "location",
+  "serviceIntervalMonths",
 ] as const;
 
 async function save(generatorId: string | null, formData: FormData): Promise<FormState> {
@@ -43,6 +45,7 @@ async function save(generatorId: string | null, formData: FormData): Promise<For
   }
   revalidatePath("/generators");
   revalidatePath(`/customers/${parsed.data.customerId}`);
+  await setFlash("generatorSaved");
   // Only new generators come from the setup flow; edits always return to the generator.
   redirect(!generatorId && isSetupFlow(formData) ? "/welcome" : `/generators/${id}`);
 }
@@ -57,4 +60,21 @@ export async function updateGeneratorAction(
   formData: FormData,
 ): Promise<FormState> {
   return save(generatorId, formData);
+}
+
+/** Deletes the generator and its whole repair history (the page warns with the count first). */
+export async function deleteGeneratorAction(generatorId: string): Promise<void> {
+  const technician = await requireTechnician();
+  let customerId: string;
+  try {
+    customerId = await deleteGenerator(technician.id, generatorId);
+  } catch (error) {
+    if (error instanceof NotFoundError) notFound();
+    throw error;
+  }
+  revalidatePath("/generators");
+  revalidatePath("/repairs");
+  revalidatePath(`/customers/${customerId}`);
+  await setFlash("generatorDeleted");
+  redirect(`/customers/${customerId}`);
 }

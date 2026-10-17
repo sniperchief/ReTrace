@@ -2,7 +2,7 @@ import "server-only";
 import type { CustomerInput } from "@/lib/schemas/customer";
 import { searchKeysFilter } from "@/lib/search";
 import { collections, type CustomerDoc } from "./collections";
-import { NotFoundError } from "./errors";
+import { ConflictError, NotFoundError } from "./errors";
 import { refreshGeneratorSearchKeysForCustomer } from "./generators";
 import { toObjectId } from "./ids";
 import { customerSearchKeys } from "./searchKeys";
@@ -79,4 +79,18 @@ export async function updateCustomer(
   // Generator search keys include the owner's name and phone; keep them in sync.
   await refreshGeneratorSearchKeysForCustomer(technicianId, doc);
   return toCustomer(doc);
+}
+
+/**
+ * Deletes a customer. Refused while they still have generators, so repair
+ * history is never removed as a side effect of tidying up the customer list.
+ */
+export async function deleteCustomer(technicianId: string, id: string): Promise<void> {
+  const _id = toObjectId(id);
+  if (!_id) throw new NotFoundError("customer");
+  const owned = await collections.customers().countDocuments({ _id, technicianId }, { limit: 1 });
+  if (!owned) throw new NotFoundError("customer");
+  const generators = await collections.generators().countDocuments({ technicianId, customerId: _id }, { limit: 1 });
+  if (generators) throw new ConflictError("_form", "customerHasGenerators");
+  await collections.customers().deleteOne({ _id, technicianId });
 }

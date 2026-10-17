@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { getMessages, errorMessage, interpolate } from "@/i18n";
+import { errorMessage, interpolate } from "@/i18n";
 import type { FieldErrors } from "@/lib/schemas/common";
+import { getT } from "@/server/i18n";
 import { buttonStyles, inputClass as input } from "./ui";
 
 type Values = { q?: string; part?: string; from?: string; to?: string; generator?: string };
 
 /** Plain GET form so searches are shareable URLs and work without JavaScript. */
-export function RepairSearchForm({
+export async function RepairSearchForm({
   values,
   errors = {},
   generatorLabel,
@@ -15,7 +16,7 @@ export function RepairSearchForm({
   errors?: FieldErrors;
   generatorLabel?: string;
 }) {
-  const t = getMessages();
+  const t = await getT();
   const err = (k: string) => (errors[k] ? errorMessage(t, errors[k]![0]) : undefined);
 
   return (

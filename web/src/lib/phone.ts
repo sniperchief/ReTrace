@@ -22,3 +22,14 @@ export function phoneSearchKeys(e164: string): string[] {
   }
   return keys;
 }
+
+/** `tel:` link for a stored (E.164) number. */
+export function telHref(e164: string): string {
+  return `tel:${e164}`;
+}
+
+/** WhatsApp chat link for a stored (E.164) number, optionally with a prefilled message. */
+export function whatsappHref(e164: string, text?: string): string {
+  const url = `https://wa.me/${e164.replace(/^\+/, "")}`;
+  return text ? `${url}?text=${encodeURIComponent(text)}` : url;
+}

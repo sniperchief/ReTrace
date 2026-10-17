@@ -1,17 +1,25 @@
 import { en, type Messages } from "./messages/en";
+import { pcm } from "./messages/pcm";
 
 export type { Messages };
 
-export const locales = ["en"] as const;
+// "pcm" is the ISO 639-3 code for Nigerian Pidgin.
+export const locales = ["en", "pcm"] as const;
 export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
-const dictionaries: Record<Locale, Messages> = { en };
+/** Cookie holding the language a technician picked on this device. */
+export const LOCALE_COOKIE = "rt_locale";
+
+export function isLocale(value: string | undefined): value is Locale {
+  return !!value && (locales as readonly string[]).includes(value);
+}
+
+const dictionaries: Record<Locale, Messages> = { en, pcm };
 
 /**
- * Returns the UI strings for a locale. Only English exists today; when more
- * locales are added, resolve the locale from the technician's profile or a
- * cookie and pass it here.
+ * UI strings for a locale. Server Components get the request's language from
+ * `getT()` (server/i18n.ts); client components from `useMessages()`.
  */
 export function getMessages(locale: Locale = defaultLocale): Messages {
   return dictionaries[locale];

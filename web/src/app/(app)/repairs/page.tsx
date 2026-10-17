@@ -3,20 +3,23 @@ import { DraftList } from "@/components/draft-list";
 import { RepairSearchForm } from "@/components/repair-search-form";
 import { RepairSummary } from "@/components/repair-summary";
 import { EmptyState, PageHeader } from "@/components/ui";
-import { getMessages, interpolate } from "@/i18n";
+import { interpolate } from "@/i18n";
 import { toFieldErrors } from "@/lib/schemas/common";
 import { firstParam, isActiveSearch, repairSearchSchema } from "@/lib/schemas/search";
 import { listDrafts } from "@/server/data/drafts";
 import { getGenerator } from "@/server/data/generators";
 import { listRecentRepairs } from "@/server/data/repairs";
 import { searchRepairs } from "@/server/data/search";
+import { getT } from "@/server/i18n";
 import { requireTechnician } from "@/server/session";
 
-export const metadata: Metadata = { title: getMessages().repairs.title };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT()).repairs.title };
+}
 
 export default async function RepairsPage({ searchParams }: PageProps<"/repairs">) {
   const technician = await requireTechnician();
-  const t = getMessages();
+  const t = await getT();
   const params = await searchParams;
   const raw = {
     q: firstParam(params.q),

@@ -1,6 +1,7 @@
 import type { Locale } from "@/i18n";
 
-const intlLocale: Record<Locale, string> = { en: "en-NG" };
+// Pidgin speakers read dates the Nigerian English way.
+const intlLocale: Record<Locale, string> = { en: "en-NG", pcm: "en-NG" };
 
 /** Date-only values (repair dates) are stored at UTC midnight. */
 export function formatDate(date: Date, locale: Locale = "en"): string {

@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { getMessages } from "@/i18n";
 import { formatDate } from "@/lib/format";
 import { formatNaira } from "@/lib/money";
 import type { Repair } from "@/server/data/repairs";
+import { getT } from "@/server/i18n";
 
 /**
  * A generator's confirmed repairs as a timeline: newest first, undated
  * records grouped last. Fields that weren't recorded say so, rather than
  * being left out silently or filled with a guess.
  */
-export function RepairTimeline({ repairs }: { repairs: Repair[] }) {
-  const t = getMessages();
+export async function RepairTimeline({ repairs }: { repairs: Repair[] }) {
+  const t = await getT();
   const dated = repairs.filter((r) => r.repairDate);
   const undated = repairs.filter((r) => !r.repairDate);
 
@@ -31,8 +31,8 @@ export function RepairTimeline({ repairs }: { repairs: Repair[] }) {
   );
 }
 
-function TimelineItem({ repair, heading }: { repair: Repair; heading: string }) {
-  const t = getMessages();
+async function TimelineItem({ repair, heading }: { repair: Repair; heading: string }) {
+  const t = await getT();
   const notRecorded = <span className="text-muted italic">{t.common.notRecorded}</span>;
   const rows = [
     { label: t.repairs.reportedSymptoms, value: repair.reportedSymptoms },

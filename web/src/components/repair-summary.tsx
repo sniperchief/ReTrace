@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { getMessages } from "@/i18n";
 import { formatDate } from "@/lib/format";
 import { formatNaira } from "@/lib/money";
 import type { Repair } from "@/server/data/repairs";
+import { getT } from "@/server/i18n";
 
 /** One entry in a repair history or list. */
-export function RepairSummary({
+export async function RepairSummary({
   repair,
   subtitle,
   footnote,
@@ -14,7 +14,7 @@ export function RepairSummary({
   subtitle?: string;
   footnote?: string;
 }) {
-  const t = getMessages();
+  const t = await getT();
   const lines = [
     { label: t.repairs.reportedSymptoms, value: repair.reportedSymptoms },
     { label: t.repairs.diagnosis, value: repair.diagnosis },

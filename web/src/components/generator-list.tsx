@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { getMessages } from "@/i18n";
 import { formatDate } from "@/lib/format";
 import type { GeneratorWithCustomer } from "@/server/data/generators";
+import { getT } from "@/server/i18n";
 import { ChevronRightIcon } from "./icons";
 
-export function GeneratorList({
+export async function GeneratorList({
   generators,
   showCustomer = true,
   hrefFor = (g) => `/generators/${g.id}`,
@@ -14,7 +14,7 @@ export function GeneratorList({
   /** Where each row leads; the repair picker sends rows to the voice note page. */
   hrefFor?: (generator: GeneratorWithCustomer) => string;
 }) {
-  const t = getMessages();
+  const t = await getT();
   return (
     <ul className="divide-y divide-border overflow-hidden rounded-card border border-border bg-surface">
       {generators.map((g) => {
