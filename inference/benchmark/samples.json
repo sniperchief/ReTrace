@@ -1,0 +1,54 @@
+[
+  {
+    "id": "short-plug",
+    "voice": "Microsoft David Desktop",
+    "text": "Mama Bisi's Sumec generator. The customer said it would not start. I found the spark plug was dead. I changed the spark plug for 1,500 naira. I charged her 5,000 naira in total.",
+    "expected": {
+      "reportedSymptoms": "would not start",
+      "diagnosis": "spark plug was dead",
+      "workPerformed": "changed the spark plug",
+      "parts": [{"name": "spark plug", "costNaira": 1500}],
+      "totalCostNaira": 5000,
+      "repairDate": null
+    }
+  },
+  {
+    "id": "medium-avr",
+    "voice": "Microsoft Zira Desktop",
+    "text": "Today I worked on the Elepaq three point five K V A for Baba Tunde in Ikeja. He complained that the generator goes off after about ten minutes and the light was fluctuating. I checked it and found the A V R was faulty and the air filter was blocked. I replaced the A V R for 18,000 naira and cleaned the air filter. I also changed the engine oil, one litre, 4,500 naira. The total charge was 30,000 naira. I advised him not to overload it with the pumping machine.",
+    "expected": {
+      "reportedSymptoms": "goes off after about ten minutes; light fluctuating",
+      "diagnosis": "AVR faulty; air filter blocked",
+      "workPerformed": "replaced AVR; cleaned air filter; changed engine oil",
+      "parts": [{"name": "AVR", "costNaira": 18000}, {"name": "engine oil", "costNaira": 4500}],
+      "totalCostNaira": 30000,
+      "repairDate": "today"
+    }
+  },
+  {
+    "id": "long-carb",
+    "voice": "Microsoft David Desktop",
+    "text": "This note is for the Tiger generator at Iya Sade's shop on Allen Avenue. She brought it on the 3rd of October because it was hard to start and it was smoking a lot when running. When I opened it, the carburettor was very dirty, the fuel had water inside, and the piston rings were worn. I drained the fuel tank and flushed the fuel line. I cleaned the carburettor completely. I replaced the piston rings, that was 6,000 naira for the rings, and the gasket kit was 2,500 naira. I also put a new spark plug, 1,500 naira. Labour was 10,000 naira. So the total was 20,000 naira. After the work, it started on the first pull and the smoke reduced. I told her to buy fuel only from a good filling station and to bring it back in three months for servicing.",
+    "expected": {
+      "reportedSymptoms": "hard to start; smoking when running",
+      "diagnosis": "dirty carburettor; water in fuel; worn piston rings",
+      "workPerformed": "drained tank and flushed fuel line; cleaned carburettor; replaced piston rings, gasket kit, spark plug",
+      "parts": [{"name": "piston rings", "costNaira": 6000}, {"name": "gasket kit", "costNaira": 2500}, {"name": "spark plug", "costNaira": 1500}],
+      "totalCostNaira": 20000,
+      "repairDate": "2026-10-03"
+    }
+  },
+  {
+    "id": "sparse-noise",
+    "voice": "Microsoft Zira Desktop",
+    "text": "Went to check the Firman generator for Mister Okafor. It was making a loud rattling noise. The exhaust bolts were loose. I tightened the exhaust and the noise stopped. No parts were used.",
+    "expected": {
+      "reportedSymptoms": "loud rattling noise",
+      "diagnosis": "exhaust bolts loose",
+      "workPerformed": "tightened the exhaust",
+      "parts": [],
+      "totalCostNaira": null,
+      "repairDate": null
+    }
+  }
+]

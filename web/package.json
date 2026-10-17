@@ -1,0 +1,38 @@
+{
+  "name": "retrace-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:indexes": "tsx --env-file-if-exists=.env.local scripts/create-indexes.ts",
+    "db:local": "node scripts/local-mongo.mjs"
+  },
+  "dependencies": {
+    "better-auth": "^1.7.10",
+    "mongodb": "^7.7.0",
+    "next": "16.4.2",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.2",
+    "mongodb-memory-server": "^11.3.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.0.5"
+  }
+}
