@@ -11,7 +11,8 @@ function createAuth() {
   return betterAuth({
     appName: "ReTrace",
     secret: env.AUTH_SECRET,
-    baseURL: env.AUTH_URL,
+    // Only the origin: a path here (e.g. ".../sign-in") would move every auth route and break sign-in.
+    baseURL: env.AUTH_URL ? new URL(env.AUTH_URL).origin : undefined,
     database: mongodbAdapter(getDb(), { client: getMongoClient() }),
     // Technician accounts live in `technicians`; sessions etc. use the defaults.
     user: { modelName: "technicians" },
