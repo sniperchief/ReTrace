@@ -19,7 +19,7 @@ Setup, environment variables and test instructions: [../docs/setup.md](../docs/s
 src/
   app/                 routes: (auth) sign-in/up, (app) customers, generators, repairs
   components/          UI and client forms
-  i18n/                UI strings (English today; add locales alongside en.ts)
+  i18n/                UI strings: en.ts (English), pcm.ts (Nigerian Pidgin)
   lib/                 shared, client-safe helpers and Zod schemas
   server/
     auth.ts            Better Auth config (email + password)
